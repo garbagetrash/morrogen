@@ -10,6 +10,7 @@
 
 #include "ModRecord.h"
 
+#include <string>
 #include <vector>
 
 class CellRecord: public ModRecord
@@ -17,10 +18,10 @@ class CellRecord: public ModRecord
 public:
 
 	// Set the Id string
-	int setIdString(const char *name);
+	int setIdString(std::string name);
 
 	// Set the region name string
-	int setRegionName(const char *name);
+	int setRegionName(std::string name);
 
 	// Set the grid and flags (DATA subrecord)
 	int setGridAndFlags(int GridX, int GridY, int Flags);
@@ -28,17 +29,21 @@ public:
 	// Set values from subrecords
 	int setDataValues(ModSubRecord subRecord);
 
+	// Set the record size
+	int setRecordSize();
+
 	// Export CellRecord to raw mod data format
-	std::vector<char> exportToModData();
+	std::string exportToModData();
+	size_t exportToModFile(FILE *fid);
 
 	// Data
-	std::vector<char> IdString;
+	std::string IdString;
 
 	int Flags;
 	int GridX;
 	int GridY;
 
-	std::vector<char> RegionName;
+	std::string RegionName;
 };
 
 #endif /* CELLRECORD_H_ */

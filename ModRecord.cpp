@@ -11,9 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 ModRecord::ModRecord() {
 	// TODO Auto-generated constructor stub
-
+	this->header1 = 0;
+	this->flags = 0;
 }
 
 ModRecord::~ModRecord() {

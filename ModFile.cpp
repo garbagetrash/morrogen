@@ -9,11 +9,14 @@
 #include "json.h"
 #include "simplexnoise.h"
 
+#include <fstream>
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "FileHeaderRecord.h"
 #include "CellRecord.h"
 #include "LandRecord.h"
 
@@ -140,55 +143,123 @@ int ModFile::printToReadableFile()
 
 int ModFile::generateNewLand(int cellX, int cellY, unsigned int seed)
 {
+	// BUT EVEN BEFORE THAT create the TES3 file header
+	FileHeaderRecord header;
+	std::string asdf;
+	asdf.assign (256, 0);
+	header.setHedrSubRecord(1.3, 1, "asdf", asdf, 3);
+	std::vector< std::string > masterEsms;
+	masterEsms.push_back("Morrowind.esm");
+	masterEsms.push_back("Bloodmoon.esm");
+	masterEsms.push_back("Tribunal.esm");
+	header.setMastSubRecord(masterEsms);
+	std::vector<long long> masterSizes;
+	masterSizes.push_back(79837557);
+	masterSizes.push_back(9631798);
+	masterSizes.push_back(4565686);
+	header.setDataSubRecord(masterSizes);
+	header.setRecordSize();
+	//std::string outputFile = header.exportToModData();
+	FILE *fid = fopen("NewMod.esp", "wb");
+	size_t totalSize = header.exportToModFile(fid);
+
 	// First create the CELL record(s)
 	CellRecord cellRecord;
 	cellRecord.setIdString("");
-	cellRecord.setGridAndFlags(-14, -3, 2);
-	cellRecord.setRegionName("Created Region");
+	cellRecord.setGridAndFlags(-14, 2, 2);
+	cellRecord.setRegionName(std::string("Bitter Coast Region"));
+	cellRecord.setRecordSize();
+
+	totalSize += cellRecord.exportToModFile(fid);
+
+	// Now the 2nd one
+	CellRecord cellRecord2;
+	cellRecord2.setIdString("");
+	cellRecord2.setGridAndFlags(-14, 3, 2);
+	//cellRecord2.setRegionName(std::string());
+	cellRecord2.setRecordSize();
+
+	totalSize += cellRecord2.exportToModFile(fid);
+
+	//outputFile += cellRecord.exportToModData();
 
 	// Now make the LAND record(s)
 	LandRecord landRecord;
-	landRecord.setCell(-14, -3);
+	landRecord.setCell(-14, 2);
 	landRecord.setUnknown();
 
 	// Create and set the height map
-	float offset = 0;
-	const float octaves = 4;
-	const float persistence = 1;
+	float offset = 5;
+	const float octaves = 7;
+	const float persistence = 0.5;
 	const float scale = 1;
-	const float loBound = -128;
+	const float loBound = 0;
 	const float hiBound = 128;
 	signed char heightmap[65][65];
 	for (int i = 0; i < 65; i++)
 	{
 		for (int j = 0; j < 65; j++)
 		{
-			const float x = floor(i / 65);
-			const float y = i % 65;
+			const float x = i / 64.0;
+			const float y = j / 64.0;
 			float value = scaled_octave_noise_2d(octaves, persistence, scale, loBound, hiBound, x, y);
 			heightmap[i][j] = round(value);
 		}
 	}
+	// TODO: fix this so that heightmap is converted from actual heights to differential heights.
 	landRecord.setHeightMap(heightmap, offset);
+	//landRecord.genFlatHeightMap(offset);
+	landRecord.printHeightMap(false);
 
 	// Create and set the normal map from the height map data
 	LandRecord::normals normalmap;
-	// TODO: Algorithm to go from height map to normal map
-	landRecord.setNormalMap(normalmap);
+	typedef struct {
+		double X;
+		double Y;
+		double Z;
+	} vect3;
 
-	// Set the world map pixels... all to whatever 0 is for now.
-	std::vector< std::vector<char> > pixelMap;
-	for (int i = 0; i < 9; i++)
+	for (unsigned int i = 0; i < 65; i++)
 	{
-		for (int j = 0; j < 9; j++)
+		for (unsigned int j = 0; j < 65; j++)
 		{
-			pixelMap[i][j] = 0;
+			// t vect has x = 1, y = 0, always.
+			double tz = heightmap[i < 64 ? i+1 : i][j] - heightmap[i > 0 ? i-1 : i][j];
+			if (i == 0 || i == 64)
+			{
+				tz = tz * 2;
+			}
+
+			// beta vect has x = 0, y = 1, always.
+			double betaz = heightmap[i][j < 64 ? j+1 : j] - heightmap[i][j > 0 ? j-1 : j];
+			if (j == 0 || j == 64)
+			{
+				betaz = betaz * 2;
+			}
+
+			// Cross product of t and beta to get normal vector
+			double factor = sqrt(tz*tz + betaz*betaz + 1);
+			normalmap[i][j].X = round(127 * -tz / factor);
+			normalmap[i][j].Y = round(127 * betaz / factor);
+			normalmap[i][j].Z = round(127 * 1 / factor);
 		}
 	}
+	landRecord.setNormalMap(normalmap);
+	landRecord.convertHeightMapToDiff();
+	landRecord.printHeightMap(false);
+
+	// Set the world map pixels... all to whatever 0 is for now.
+	std::string pixelMap;
+	pixelMap.assign(81, 0);
 	landRecord.setWorldMapPixels(pixelMap);
+	landRecord.setRecordSize();
 
-	// TODO: Now write landRecord to the active mod file
+	// Now write landRecord to the active mod file
+	totalSize += landRecord.exportToModFile(fid);
 
+	fclose(fid);
+	printf("Wrote %zu bytes!\n", totalSize);
+	fflush(stdout);
 
 	return 1;
 }
@@ -247,6 +318,19 @@ int ModFile::freeRawDataBuffer()
 int ModFile::freeRecords()
 {
 	this->records.clear();
+
+	return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+// Private Function Definitions
+////////////////////////////////////////////////////////////////////
+
+int ModFile::writeStringToFile(const char *fileName, std::string input)
+{
+	FILE *fid = fopen(fileName, "wb");
+	fwrite(input.c_str(), sizeof(char), input.size(), fid);
+	fclose(fid);
 
 	return 1;
 }

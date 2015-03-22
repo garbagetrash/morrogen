@@ -11,6 +11,9 @@
 #include "ModRecord.h"
 #include "ModSubRecord.h"
 
+#include <stdio.h>
+
+#include <string>
 #include <vector>
 
 class LandRecord: public ModRecord
@@ -33,22 +36,32 @@ public:
 	int setUnknown();
 
 	// Set the height map as specified
+	int genFlatHeightMap(float offset);
+	int genCornerCaseTest(float offset);
 	int setHeightMap(signed char heightmap[65][65], float offset);
+	int printHeightMap(bool asciiHeightMapActive);
+	void asciiHeightToChar(char num, char *buf);
+
+	// Converts the height map from absolute values to differential
+	int convertHeightMapToDiff();
 
 	// Set the normal map as specified
 	int setNormalMap(normals normalmap);
 
 	// Set the world map pixel array
-	int setWorldMapPixels(std::vector< std::vector<char> > pixelArray);
+	int setWorldMapPixels(std::string pixelArray);
+
+	// Set the record size
+	int setRecordSize();
 
 	// Write the object to the raw mod data format
-	int
+	size_t exportToModFile(FILE *fid);
 
 	// Data
-	int CellX;
-	int CellY;
+	long CellX;
+	long CellY;
 
-	int Unknown;
+	long Unknown;
 
 	normals NormalMap;
 
@@ -59,7 +72,7 @@ public:
 
 	// This is something to do with the world map color palette... a
 	// 9x9 grid of bytes, so 81 pixels.  0 is blue.
-	std::vector< std::vector<char> > WorldMapPixels;
+	std::string WorldMapPixels;
 };
 
 #endif /* LANDRECORD_H_ */

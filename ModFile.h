@@ -10,6 +10,7 @@
 
 #include "ModRecord.h"
 
+#include <string>
 #include <vector>
 
 class ModFile {
@@ -44,6 +45,9 @@ public:
 
 	// File is composed entirely of records
 	std::vector<ModRecord> records;
+
+private:
+	int writeStringToFile(const char *fileName, std::string input);
 };
 
 #endif /* MODFILE_H_ */
