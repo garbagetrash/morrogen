@@ -7,27 +7,32 @@
 
 #include <memory>
 #include <iostream>
-#include <stdlib.h>
 
 #include "ModFile.h"
 
 
-int main(void) {
-  std::cout << "Hello World!" << std::endl;
-
+void parse_existing_file(const char *filename) {
   // Setup the file
-  const char filename[512] = "E:/Games/Steam/steamapps/common/Morrowind/Data Files/ExampleTerrain.ESP";
   std::unique_ptr<ModFile> myFile = std::make_unique<ModFile>(filename);
 
   // Parse the data
-  //myFile.parseRawData();
+  myFile->parseRawData();
 
   // Print to a json for verification
-  //myFile.printToReadableFile();
+  myFile->printToReadableFile();
+}
 
+void create_new_mod() {
   // Generate new mod
   std::unique_ptr<ModFile> newMod = std::make_unique<ModFile>();
-  newMod->generateNewLand(12, 14, 0);
+  newMod->generateNewLand(-15, 5, 0);
+}
+
+int main(void) {
+  std::cout << "Hello World!" << std::endl;
+
+  // Create a new terrain mod
+  create_new_mod();
 
   std::cout << "Main() completed successfully!" << std::endl;
 
