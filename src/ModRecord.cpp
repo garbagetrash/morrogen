@@ -8,7 +8,7 @@
 #include "ModRecord.h"
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string.h>
 
 #include <string>
@@ -70,11 +70,11 @@ int ModRecord::encodeToJSON(JsonNode *record)
 	char temp[10];
 	memset(temp, 0, 10);
 	json_append_member(record, "Name", json_mkstring(this->name));
-	itoa(this->size, temp, 10);
+  sprintf(temp, "%d", this->size);
 	json_append_member(record, "Size", json_mkstring(temp));
-	itoa(this->header1, temp, 16);
+  sprintf(temp, "%x", this->header1);
 	json_append_member(record, "Header1", json_mkstring(temp));
-	itoa(this->flags, temp, 16);
+  sprintf(temp, "%x", this->flags);
 	json_append_member(record, "Flags", json_mkstring(temp));
 
 	JsonNode *subRecords = json_mkarray();

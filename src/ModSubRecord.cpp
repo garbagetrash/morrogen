@@ -26,7 +26,7 @@ int ModSubRecord::encodeToJSON(JsonNode *subRecord)
 
 	char temp[10];
 	memset(temp, 0, 10);
-	itoa(this->size, temp, 10);
+  sprintf(temp, "%d", this->size);
 	json_append_member(subRecord, "Size", json_mkstring(temp));
 
 	// Not all data is valid UTF-8... so it fails.  What do?
