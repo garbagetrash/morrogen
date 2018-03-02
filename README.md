@@ -19,6 +19,8 @@ $ cmake .. && make
 
 Super valuable link for understanding Morrowind mod format:
 http://www.uesp.net/morrow/tech/mw_esm.txt
+http://www.mwmythicmods.com/tutorials/MorrowindESPFormat.html
+
 
 Everything on here is helpful as well:
 http://www.uesp.net/wiki/Tes3Mod:File_Format

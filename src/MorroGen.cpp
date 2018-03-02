@@ -28,11 +28,19 @@ void create_new_mod() {
   newMod->generateNewLand(-15, 5, 0);
 }
 
+void create_new_header_mod() {
+  std::unique_ptr<ModFile> newMod = std::make_unique<ModFile>();
+  newMod->generateHeader("NewHeaderMod.esp");
+}
+
 int main(void) {
   std::cout << "Hello World!" << std::endl;
 
   // Create a new terrain mod
-  create_new_mod();
+  //create_new_mod();
+
+  // Create a new header mod
+  create_new_header_mod();
 
   std::cout << "Main() completed successfully!" << std::endl;
 

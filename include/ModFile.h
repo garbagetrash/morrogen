@@ -15,39 +15,42 @@
 
 class ModFile {
 public:
-	ModFile();
-	ModFile(const char *fileName);
-	virtual ~ModFile();
+  ModFile();
+  ModFile(const char *fileName);
+  virtual ~ModFile();
 
-	// Populates the records given the raw data.
-	int parseRawData();
+  // Populates the records given the raw data.
+  int parseRawData();
 
-	// Prints the mod file to a human readable file... similar to JSON
-	// From my sample set of 1 this seems to blow up the file size by
-	// about a factor of 10... so just keep that in mind.
-	int printToReadableFile();
+  // Prints the mod file to a human readable file... similar to JSON
+  // From my sample set of 1 this seems to blow up the file size by
+  // about a factor of 10... so just keep that in mind.
+  int printToReadableFile();
 
-	// Populate the raw data buffer from a given file.
-	int setRawDataFromFile(const char *fileName);
+  // Populate the raw data buffer from a given file.
+  int setRawDataFromFile(const char *fileName);
 
-	// Makes a new land cell at the given x, y location provide.
-	int generateNewLand(int cellX, int cellY, unsigned int seed);
+  // Makes a new land cell at the given x, y location provide.
+  int generateNewLand(int cellX, int cellY, unsigned int seed);
 
-	// Frees up the raw data buffer, and sets the size to 0.
-	int freeRawDataBuffer();
+  // Create a new blank header file mod
+  int generateHeader(const char *filename);
 
-	// Frees up the records, and sets the size to 0.
-	int freeRecords();
+  // Frees up the raw data buffer, and sets the size to 0.
+  int freeRawDataBuffer();
 
-	// Storage place for raw data file
-	char *rawData;
-	int nBytesRawData;
+  // Frees up the records, and sets the size to 0.
+  int freeRecords();
 
-	// File is composed entirely of records
-	std::vector<ModRecord> records;
+  // Storage place for raw data file
+  char *rawData;
+  int nBytesRawData;
+
+  // File is composed entirely of records
+  std::vector<ModRecord> records;
 
 private:
-	int writeStringToFile(const char *fileName, std::string input);
+  int writeStringToFile(const char *fileName, std::string input);
 };
 
 #endif /* MODFILE_H_ */

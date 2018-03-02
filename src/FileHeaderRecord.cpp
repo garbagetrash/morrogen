@@ -8,6 +8,7 @@
 
 #include <string.h>
 
+#include <cstdint>
 #include <string>
 #include <sstream>
 
@@ -18,11 +19,12 @@ template < typename T > std::string to_string(T value)
   return os.str();
 }
 
-int FileHeaderRecord::setHedrSubRecord(float version, long unknown,
+int FileHeaderRecord::setHedrSubRecord(float version, std::uint32_t unknown,
                                        const char companyName[32],
-                                       std::string fileDesc, long nRecords)
+                                       std::string fileDesc, std::uint32_t nRecords)
 {
   this->Version = version;
+  this->Unknown = unknown;
   this->CompanyName.assign(32, 0);
   this->CompanyName = companyName;
   this->CompanyName.assign(256, 0);
@@ -46,7 +48,7 @@ int FileHeaderRecord::setMastSubRecord(std::vector< std::string > fileNames)
   return 1;
 }
 
-int FileHeaderRecord::setDataSubRecord(std::vector<long long> masterSize)
+int FileHeaderRecord::setDataSubRecord(std::vector<std::uint64_t> masterSize)
 {
   this->MasterSize.clear();
   this->MasterSize = masterSize;
@@ -112,19 +114,19 @@ size_t FileHeaderRecord::exportToModFile(FILE *outFile)
   // TES3 Header Record
   size_t totalSize = 0;
   totalSize += fwrite("TES3", sizeof(char), 4, outFile);
-  totalSize += fwrite(&(this->size), sizeof(long), 1, outFile);
-  totalSize += fwrite(&(this->header1), sizeof(long), 1, outFile);
-  totalSize += fwrite(&(this->flags), sizeof(long), 1, outFile);
+  totalSize += fwrite(&(this->size), sizeof(std::uint32_t), 1, outFile);
+  totalSize += fwrite(&(this->header1), sizeof(std::uint32_t), 1, outFile);
+  totalSize += fwrite(&(this->flags), sizeof(std::uint32_t), 1, outFile);
 
   // HEDR subrecord
   totalSize += fwrite("HEDR", sizeof(char), 4, outFile);
-  long size = sizeof(float) + 2 * sizeof(long) + sizeof(char) * (32 + 256);
-  totalSize += fwrite(&size, sizeof(long), 1, outFile);
+  std::uint32_t size = sizeof(float) + 2 * sizeof(std::uint32_t) + sizeof(char) * (32 + 256);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, outFile);
   totalSize += fwrite(&(this->Version), sizeof(float), 1, outFile);
-  totalSize += fwrite(&(this->Unknown), sizeof(long), 1, outFile);
+  totalSize += fwrite(&(this->Unknown), sizeof(std::uint32_t), 1, outFile);
   totalSize += fwrite(this->CompanyName.c_str(), sizeof(char), 32, outFile);
   totalSize += fwrite(this->EsmFileDesc.c_str(), sizeof(char), 256, outFile);
-  totalSize += fwrite(&(this->NumRecords), sizeof(long), 1, outFile);
+  totalSize += fwrite(&(this->NumRecords), sizeof(std::uint32_t), 1, outFile);
 
   // MAST and DATA subrecord(s)
   for (unsigned int i = 0; i < this->MasterFiles.size(); i++)
@@ -133,12 +135,12 @@ size_t FileHeaderRecord::exportToModFile(FILE *outFile)
     size = this->MasterFiles[i].size() * sizeof(char);
     printf("%d\n", (int) size);
     fflush(stdout);
-    totalSize += fwrite(&size, sizeof(long), 1, outFile);
+    totalSize += fwrite(&size, sizeof(std::uint32_t), 1, outFile);
     totalSize += fwrite(this->MasterFiles[i].c_str(), sizeof(char), size, outFile);
     totalSize += fwrite("DATA", sizeof(char), 4, outFile);
-    size = sizeof(long long);
-    totalSize += fwrite(&size, sizeof(long), 1, outFile);
-    totalSize += fwrite(&(this->MasterSize[i]), sizeof(long long), 1, outFile);
+    size = sizeof(std::uint64_t);
+    totalSize += fwrite(&size, sizeof(std::uint32_t), 1, outFile);
+    totalSize += fwrite(&(this->MasterSize[i]), sizeof(std::uint64_t), 1, outFile);
   }
 
   return totalSize;
