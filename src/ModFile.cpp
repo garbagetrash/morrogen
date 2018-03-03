@@ -140,44 +140,11 @@ int ModFile::printToReadableFile()
   return 1;
 }
 
-int ModFile::generateHeader(const char *filename)
-{
-  FileHeaderRecord header;
-  std::string asdf;
-  asdf.assign (256, 0);
-  header.setHedrSubRecord(1.3, 1, "asdf", asdf, 3);
-  std::vector< std::string > masterEsms;
-  masterEsms.push_back("Morrowind.esm");
-  header.setMastSubRecord(masterEsms);
-  std::vector<std::uint64_t> masterSizes;
-  masterSizes.push_back(79837557);
-  header.setDataSubRecord(masterSizes);
-  header.setRecordSize();
-  //std::string outputFile = header.exportToModData();
-  FILE *fid = fopen(filename, "wb");
-  size_t totalSize = header.exportToModFile(fid);
-}
-
-int ModFile::generateNewLand(int cellX, int cellY, unsigned int seed)
+int ModFile::generateNewLand(const char *filename, int cellX, int cellY, unsigned int seed)
 {
   // BUT EVEN BEFORE THAT create the TES3 file header
-  FileHeaderRecord header;
-  std::string asdf;
-  asdf.assign (256, 0);
-  header.setHedrSubRecord(1.3, 1, "asdf", asdf, 3);
-  std::vector< std::string > masterEsms;
-  masterEsms.push_back("Morrowind.esm");
-  masterEsms.push_back("Bloodmoon.esm");
-  masterEsms.push_back("Tribunal.esm");
-  header.setMastSubRecord(masterEsms);
-  std::vector<std::uint64_t> masterSizes;
-  masterSizes.push_back(79837557);
-  masterSizes.push_back(9631798);
-  masterSizes.push_back(4565686);
-  header.setDataSubRecord(masterSizes);
-  header.setRecordSize();
-  //std::string outputFile = header.exportToModData();
-  FILE *fid = fopen("NewMod.esp", "wb");
+  FileHeaderRecord header = generateHeader(filename);
+  FILE *fid = fopen(filename, "wb");
   size_t totalSize = header.exportToModFile(fid);
 
   // First create the CELL record(s)
@@ -349,4 +316,25 @@ int ModFile::writeStringToFile(const char *fileName, std::string input)
   fclose(fid);
 
   return 1;
+}
+
+FileHeaderRecord ModFile::generateHeader(const char *filename)
+{
+  FileHeaderRecord header;
+  std::string asdf;
+  asdf.assign (256, 0);
+  header.setHedrSubRecord(1.3, 1, "asdf", asdf, 3);
+  std::vector< std::string > masterEsms;
+  masterEsms.push_back("Morrowind.esm");
+  masterEsms.push_back("Bloodmoon.esm");
+  masterEsms.push_back("Tribunal.esm");
+  header.setMastSubRecord(masterEsms);
+  std::vector<std::uint64_t> masterSizes;
+  masterSizes.push_back(79837557);
+  masterSizes.push_back(9631798);
+  masterSizes.push_back(4565686);
+  header.setDataSubRecord(masterSizes);
+  header.setRecordSize();
+
+  return header;
 }

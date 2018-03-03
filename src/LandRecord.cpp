@@ -12,6 +12,7 @@
 
 #include <math.h>
 
+#include <cstdint>
 #include <string>
 #include <sstream>
 
@@ -29,7 +30,7 @@ int LandRecord::setUnknown()
   return 1;
 }
 
-int LandRecord::setCell(long CellX, long CellY)
+int LandRecord::setCell(std::int32_t CellX, std::int32_t CellY)
 {
   this->CellX = CellX;
   this->CellY = CellY;
@@ -178,13 +179,13 @@ int LandRecord::setDataValues(ModSubRecord subRecord)
   if (strcmp(subRecord.name, "INTV") == 0)
   {
     printf("size: %d\n", subRecord.size);
-    long *data = (long *) subRecord.data.data();
+    std::int32_t *data = (std::int32_t *) subRecord.data.data();
     this->CellX = data[0];
     this->CellY = data[1];
   }
   else if (strcmp(subRecord.name, "DATA") == 0)
   {
-    long *data = (long *) subRecord.data.data();
+    std::int32_t *data = (std::int32_t *) subRecord.data.data();
     this->Unknown = data[0];
   }
   else if (strcmp(subRecord.name, "VNML") == 0)
@@ -220,13 +221,13 @@ int LandRecord::setDataValues(ModSubRecord subRecord)
 
 int LandRecord::setRecordSize()
 {
-  long size = 0;
+  std::uint32_t size = 0;
 
-  // INTV - subrecord header + long CellX + long CellY
-  size += 2 * sizeof(long) + 8;
+  // INTV - subrecord header + int32_t CellX + int32_t CellY
+  size += 2 * sizeof(std::int32_t) + 8;
 
-  // DATA - subrecord header + long Unknown
-  size += sizeof(long) + 8;
+  // DATA - subrecord header + uint32_t Unknown
+  size += sizeof(std::uint32_t) + 8;
 
   // VNML - subrecord header + (65*65*3 bytes) normals
   size += sizeof(normals) + 8;
@@ -249,33 +250,33 @@ size_t LandRecord::exportToModFile(FILE *fid)
 
   // LAND record header
   totalSize += fwrite("LAND", sizeof(char), 4, fid);
-  totalSize += fwrite(&(this->size), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->header1), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->flags), sizeof(long), 1, fid);
+  totalSize += fwrite(&(this->size), sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->header1), sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->flags), sizeof(std::uint32_t), 1, fid);
 
   // INTV subrecord
   totalSize += fwrite("INTV", sizeof(char), 4, fid);
-  long size = 2 * sizeof(long);
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->CellX), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->CellY), sizeof(long), 1, fid);
+  std::uint32_t size = 2 * sizeof(std::uint32_t);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->CellX), sizeof(std::int32_t), 1, fid);
+  totalSize += fwrite(&(this->CellY), sizeof(std::int32_t), 1, fid);
 
   // DATA subrecord
   totalSize += fwrite("DATA", sizeof(char), 4, fid);
-  size = sizeof(long);
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->Unknown), sizeof(long), 1, fid);
+  size = sizeof(std::uint32_t);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->Unknown), sizeof(std::uint32_t), 1, fid);
 
   // VNML subrecord
   totalSize += fwrite("VNML", sizeof(char), 4, fid);
   size = 1 * sizeof(normals);
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->NormalMap), sizeof(normals), 1, fid);
 
   // VHGT subrecord
   totalSize += fwrite("VHGT", sizeof(char), 4, fid);
   size = (65 * 65 + 1) * sizeof(char) + sizeof(short) + sizeof(float);
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->Unknown1), sizeof(float), 1, fid);
   totalSize += fwrite(&(this->Unknown2), sizeof(char), 1, fid);
   totalSize += fwrite(&(this->HeightMap), sizeof(char), 65 * 65, fid);
@@ -284,7 +285,7 @@ size_t LandRecord::exportToModFile(FILE *fid)
   // WNAM subrecord
   totalSize += fwrite("WNAM", sizeof(char), 4, fid);
   size = 81 * sizeof(char);
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->WorldMapPixels), sizeof(char), 81, fid);
 
   return totalSize;

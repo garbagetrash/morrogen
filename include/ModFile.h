@@ -8,6 +8,7 @@
 #ifndef MODFILE_H_
 #define MODFILE_H_
 
+#include "FileHeaderRecord.h"
 #include "ModRecord.h"
 
 #include <string>
@@ -31,10 +32,9 @@ public:
   int setRawDataFromFile(const char *fileName);
 
   // Makes a new land cell at the given x, y location provide.
-  int generateNewLand(int cellX, int cellY, unsigned int seed);
-
-  // Create a new blank header file mod
-  int generateHeader(const char *filename);
+  int generateNewLand(const char *filename,
+                      int cellX, int cellY,
+                      unsigned int seed);
 
   // Frees up the raw data buffer, and sets the size to 0.
   int freeRawDataBuffer();
@@ -51,6 +51,7 @@ public:
 
 private:
   int writeStringToFile(const char *fileName, std::string input);
+  FileHeaderRecord generateHeader(const char *filename);
 };
 
 #endif /* MODFILE_H_ */

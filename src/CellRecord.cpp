@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cstdint>
 #include <string>
 #include <sstream>
 
@@ -49,13 +50,13 @@ int CellRecord::setGridAndFlags(int GridX, int GridY, int Flags)
 
 int CellRecord::setRecordSize()
 {
-  long size = 0;
+  std::uint32_t size = 0;
 
   // NAME subrecord header and ID string
   size += this->IdString.size() + 8;
 
-  // DATA - long Flags + long GridX + long GridY + subrecord header
-  size += 3 * sizeof(long) + 8;
+  // DATA - uint32_t Flags + uint32_t GridX + uint32_t GridY + subrecord header
+  size += 3 * sizeof(std::uint32_t) + 8;
 
   // RGNN - string size + subrecord header
   if (this->RegionName.size() > 0)
@@ -83,7 +84,7 @@ int CellRecord::setDataValues(ModSubRecord subRecord)
   }
   else if (strcmp(subRecord.name, "DATA") == 0)
   {
-    long *data = (long *) subRecord.data.data();
+    std::uint32_t *data = (std::uint32_t *) subRecord.data.data();
     this->Flags = data[0];
     this->GridX = data[1];
     this->GridY = data[2];
@@ -112,9 +113,9 @@ std::string CellRecord::exportToModData()
 
   // Write CELL record header
   // char Name[4]
-  // long Size
-  // long Header1
-  // long Flags - 0x0000200 = Blocked, 0x00000400 = Persistant
+  // uint32_t Size
+  // uint32_t Header1
+  // uint32_t Flags - 0x0000200 = Blocked, 0x00000400 = Persistant
   // followed by subrecords
   std::string data("CELL");
   outputFile += to_string(this->size);
@@ -123,7 +124,7 @@ std::string CellRecord::exportToModData()
 
   // Each subrecord has a header of
   // char Name[4]
-  // long Size
+  // uint32_t Size
   // followed by data.
 
   // Write NAME subrecord
@@ -153,23 +154,23 @@ size_t CellRecord::exportToModFile(FILE *fid)
 
   // CELL record header
   totalSize += fwrite("CELL", sizeof(char), 4, fid);
-  totalSize += fwrite(&(this->size), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->header1), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->flags), sizeof(long), 1, fid);
+  totalSize += fwrite(&(this->size), sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->header1), sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->flags), sizeof(std::uint32_t), 1, fid);
 
   // NAME subrecord
   totalSize += fwrite("NAME", sizeof(char), 4, fid);
-  long size = this->IdString.size();
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
+  std::uint32_t size = this->IdString.size();
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(this->IdString.c_str(), sizeof(char), this->IdString.size(), fid);
 
   // DATA subrecord
   totalSize += fwrite("DATA", sizeof(char), 4, fid);
-  size = 3 * sizeof(long);
-  totalSize += fwrite(&size, sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->Flags), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->GridX), sizeof(long), 1, fid);
-  totalSize += fwrite(&(this->GridY), sizeof(long), 1, fid);
+  size = 3 * sizeof(std::uint32_t);
+  totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->Flags), sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->GridX), sizeof(std::uint32_t), 1, fid);
+  totalSize += fwrite(&(this->GridY), sizeof(std::uint32_t), 1, fid);
 
   // RGNN subrecord
   if (this->RegionName.size() > 0)
@@ -177,7 +178,7 @@ size_t CellRecord::exportToModFile(FILE *fid)
     // If it exists, write it out
     totalSize += fwrite("RGNN", sizeof(char), 4, fid);
     size = this->RegionName.size() * sizeof(char);
-    totalSize += fwrite(&size, sizeof(long), 1, fid);
+    totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
     totalSize += fwrite(this->RegionName.c_str(), sizeof(char), this->RegionName.size(), fid);
   }
 

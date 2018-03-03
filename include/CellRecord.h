@@ -17,33 +17,33 @@ class CellRecord: public ModRecord
 {
 public:
 
-	// Set the Id string
-	int setIdString(std::string name);
+  // Set the Id string
+  int setIdString(std::string name);
 
-	// Set the region name string
-	int setRegionName(std::string name);
+  // Set the region name string
+  int setRegionName(std::string name);
 
-	// Set the grid and flags (DATA subrecord)
-	int setGridAndFlags(int GridX, int GridY, int Flags);
+  // Set the grid and flags (DATA subrecord)
+  int setGridAndFlags(int GridX, int GridY, int Flags);
 
-	// Set values from subrecords
-	int setDataValues(ModSubRecord subRecord);
+  // Set values from subrecords
+  int setDataValues(ModSubRecord subRecord);
 
-	// Set the record size
-	int setRecordSize();
+  // Set the record size
+  int setRecordSize();
 
-	// Export CellRecord to raw mod data format
-	std::string exportToModData();
-	size_t exportToModFile(FILE *fid);
+  // Export CellRecord to raw mod data format
+  std::string exportToModData();
+  size_t exportToModFile(FILE *fid);
 
-	// Data
-	std::string IdString;
+  // Data
+  std::string IdString;
 
-	int Flags;
-	int GridX;
-	int GridY;
+  int Flags;
+  int GridX;
+  int GridY;
 
-	std::string RegionName;
+  std::string RegionName;
 };
 
 #endif /* CELLRECORD_H_ */

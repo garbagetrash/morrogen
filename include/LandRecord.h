@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,7 @@ public:
 	int setDataValues(ModSubRecord subRecord);
 
 	// Set Cell location
-	int setCell(long CellX, long CellY);
+	int setCell(std::int32_t CellX, std::int32_t CellY);
 
 	// Set the Unknown to 0x09
 	int setUnknown();
@@ -58,10 +59,10 @@ public:
 	size_t exportToModFile(FILE *fid);
 
 	// Data
-	long CellX;
-	long CellY;
+  std::int32_t CellX;
+  std::int32_t CellY;
 
-	long Unknown;
+  std::uint32_t Unknown;
 
 	normals NormalMap;
 
