@@ -10,6 +10,7 @@
 #include "simplexnoise.h"
 
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
@@ -140,40 +141,91 @@ int ModFile::printToReadableFile()
   return 1;
 }
 
-int ModFile::generateNewLand(const char *filename, int cellX, int cellY, unsigned int seed)
+std::vector<CellRecord> ModFile::generateCellRecords(int cellXstart,
+                                                     int cellXstop,
+                                                     int cellYstart,
+                                                     int cellYstop,
+                                                     int flags,
+                                                     std::string region_name)
 {
-  // BUT EVEN BEFORE THAT create the TES3 file header
-  FileHeaderRecord header = generateHeader(filename);
-  FILE *fid = fopen(filename, "wb");
-  size_t totalSize = header.exportToModFile(fid);
+  std::vector<CellRecord> cellRecords;
+  int lenX = abs(cellXstop - cellXstart) + 1;
+  int lenY = abs(cellYstop - cellYstart) + 1;
 
-  // First create the CELL record(s)
+  int lowX = cellXstart;
+  if (cellXstart > cellXstop) {
+    lowX = cellXstop;
+  }
+
+  int lowY = cellYstart;
+  if (cellYstart > cellYstop) {
+    lowY = cellYstop;
+  }
+
+  for (int i = 0; i < lenX; i++)
+  {
+    for (int j = 0; j < lenY; j++)
+    {
+      CellRecord cellRecord = generateCellRecord("", lowX + i, lowY + j, flags,
+                                                 region_name);
+      cellRecords.push_back(cellRecord);
+    }
+  }
+
+  return cellRecords;
+}
+
+CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
+                                       int flags, std::string region_name)
+{
   CellRecord cellRecord;
-  cellRecord.setIdString("");
-  cellRecord.setGridAndFlags(-14, 2, 2);
-  cellRecord.setRegionName(std::string("Bitter Coast Region"));
+  cellRecord.setIdString(id);
+  cellRecord.setGridAndFlags(cellX, cellY, flags);
+  cellRecord.setRegionName(region_name);
   cellRecord.setRecordSize();
 
-  totalSize += cellRecord.exportToModFile(fid);
+  return cellRecord;
+}
 
-  // Now the 2nd one
-  CellRecord cellRecord2;
-  cellRecord2.setIdString("");
-  cellRecord2.setGridAndFlags(-14, 3, 2);
-  //cellRecord2.setRegionName(std::string());
-  cellRecord2.setRecordSize();
+std::vector<LandRecord> ModFile::generateLandRecords(int cellXstart,
+                                                     int cellXstop,
+                                                     int cellYstart,
+                                                     int cellYstop)
+{
+  std::vector<LandRecord> landRecords;
+  int lenX = abs(cellXstop - cellXstart) + 1;
+  int lenY = abs(cellYstop - cellYstart) + 1;
 
-  totalSize += cellRecord2.exportToModFile(fid);
+  int lowX = cellXstart;
+  if (cellXstart > cellXstop) {
+    lowX = cellXstop;
+  }
 
-  //outputFile += cellRecord.exportToModData();
+  int lowY = cellYstart;
+  if (cellYstart > cellYstop) {
+    lowY = cellYstop;
+  }
 
-  // Now make the LAND record(s)
+  for (int i = 0; i < lenX; i++)
+  {
+    for (int j = 0; j < lenY; j++)
+    {
+      LandRecord landRecord = generateLandRecord(lowX + i, lowY + j);
+      landRecords.push_back(landRecord);
+    }
+  }
+
+  return landRecords;
+}
+
+LandRecord ModFile::generateLandRecord(int cellX, int cellY)
+{
   LandRecord landRecord;
-  landRecord.setCell(-14, 2);
+  landRecord.setCell(cellX, cellY);
   landRecord.setUnknown();
 
   // Create and set the height map
-  float offset = 5;
+  float offset = 0;
   const float octaves = 7;
   const float persistence = 0.5;
   const float scale = 1;
@@ -182,10 +234,10 @@ int ModFile::generateNewLand(const char *filename, int cellX, int cellY, unsigne
   signed char heightmap[65][65];
   for (int i = 0; i < 65; i++)
   {
+    const float x = i / 64.0 + cellX;
     for (int j = 0; j < 65; j++)
     {
-      const float x = i / 64.0;
-      const float y = j / 64.0;
+      const float y = j / 64.0 + cellY;
       float value = scaled_octave_noise_2d(octaves, persistence, scale, loBound, hiBound, x, y);
       heightmap[i][j] = round(value);
     }
@@ -238,8 +290,32 @@ int ModFile::generateNewLand(const char *filename, int cellX, int cellY, unsigne
   landRecord.setWorldMapPixels(pixelMap);
   landRecord.setRecordSize();
 
+  return landRecord;
+}
+
+int ModFile::generateNewLand(const char *filename, int cellX, int cellY,
+                             unsigned int seed)
+{
+  // BUT EVEN BEFORE THAT create the TES3 file header
+  FileHeaderRecord header = generateHeader(filename);
+  FILE *fid = fopen(filename, "wb");
+  size_t totalSize = header.exportToModFile(fid);
+
+  // First create the CELL record(s)
+  std::vector<CellRecord> cellRecords = generateCellRecords(-15, -14, 2, 3, 2,
+                                          std::string("Bitter Coast Region"));
+
+  for (unsigned int i=0; i < cellRecords.size(); i++) {
+    totalSize += cellRecords[i].exportToModFile(fid);
+  }
+
+  // Now make the LAND record(s)
+  std::vector<LandRecord> landRecords = generateLandRecords(-15, -14, 2, 3);
+
   // Now write landRecord to the active mod file
-  totalSize += landRecord.exportToModFile(fid);
+  for (unsigned int i=0; i < landRecords.size(); i++) {
+    totalSize += landRecords[i].exportToModFile(fid);
+  }
 
   fclose(fid);
   std::cout << "Wrote " << totalSize << " bytes!" << std::endl;

@@ -8,7 +8,9 @@
 #ifndef MODFILE_H_
 #define MODFILE_H_
 
+#include "CellRecord.h"
 #include "FileHeaderRecord.h"
+#include "LandRecord.h"
 #include "ModRecord.h"
 
 #include <string>
@@ -51,7 +53,25 @@ public:
 
 private:
   int writeStringToFile(const char *fileName, std::string input);
+
   FileHeaderRecord generateHeader(const char *filename);
+
+  CellRecord generateCellRecord(const char *id, int cellX, int cellY,
+                                int flags, std::string region_name);
+
+  LandRecord generateLandRecord(int cellX, int cellY);
+
+  std::vector<LandRecord> generateLandRecords(int cellXstart,
+                                              int cellXstop,
+                                              int cellYstart,
+                                              int cellYstop);
+
+  std::vector<CellRecord> generateCellRecords(int cellXstart,
+                                              int cellXstop,
+                                              int cellYstart,
+                                              int cellYstop,
+                                              int flags,
+                                              std::string region_name);
 };
 
 #endif /* MODFILE_H_ */
