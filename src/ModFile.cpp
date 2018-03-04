@@ -225,7 +225,6 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY)
   landRecord.setUnknown();
 
   // Create and set the height map
-  float offset = 0;
   const float octaves = 7;
   const float persistence = 0.5;
   const float scale = 1;
@@ -234,17 +233,16 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY)
   signed char heightmap[65][65];
   for (int i = 0; i < 65; i++)
   {
-    const float x = i / 64.0 + cellX;
+    const float x = i / 64.0 + cellY;
     for (int j = 0; j < 65; j++)
     {
-      const float y = j / 64.0 + cellY;
+      const float y = j / 64.0 + cellX;
       float value = scaled_octave_noise_2d(octaves, persistence, scale, loBound, hiBound, x, y);
       heightmap[i][j] = round(value);
     }
   }
   // TODO: fix this so that heightmap is converted from actual heights to differential heights.
-  landRecord.setHeightMap(heightmap, offset);
-  //landRecord.genFlatHeightMap(offset);
+  landRecord.setHeightMap(heightmap);
   landRecord.printHeightMap(false);
 
   // Create and set the normal map from the height map data
@@ -310,7 +308,7 @@ int ModFile::generateNewLand(const char *filename, int cellX, int cellY,
   }
 
   // Now make the LAND record(s)
-  std::vector<LandRecord> landRecords = generateLandRecords(-15, -14, 2, 3);
+  std::vector<LandRecord> landRecords = generateLandRecords(-18, -14, 0, 3);
 
   // Now write landRecord to the active mod file
   for (unsigned int i=0; i < landRecords.size(); i++) {

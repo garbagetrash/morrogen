@@ -13,6 +13,7 @@
 #include <math.h>
 
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <sstream>
 
@@ -43,7 +44,7 @@ int LandRecord::genFlatHeightMap(float offset)
   signed char temp[65][65];
   memset(temp, 0, 65*65*sizeof(char));
 
-  return setHeightMap(temp, offset);
+  return setHeightMap(temp);
 }
 
 int LandRecord::genCornerCaseTest(float offset)
@@ -70,12 +71,12 @@ int LandRecord::genCornerCaseTest(float offset)
   temp[1][63] = 15;
   temp[0][63] = 15;
   temp[1][64] = 15;
-  return setHeightMap(temp, offset);
+  return setHeightMap(temp);
 }
 
-int LandRecord::setHeightMap(signed char heightmap[65][65], float offset)
+int LandRecord::setHeightMap(signed char heightmap[65][65])
 {
-  this->Unknown1 = offset;
+  this->Unknown1 = heightmap[0][0];
   this->Unknown2 = 0x00;
   this->Unknown3 = 0x0000;
   memcpy(this->HeightMap, heightmap, 65*65);
@@ -93,11 +94,11 @@ int LandRecord::printHeightMap(bool asciiHeightMapActive)
       {
         char value[2];
         asciiHeightToChar(this->HeightMap[i][j], value);
-        printf("%s\t", value);
+        printf("%s ", value);
       }
       else
       {
-        printf("%d\t", this->HeightMap[i][j]);
+        printf("% 4d", this->HeightMap[i][j]);
       }
     }
     printf("\n");
@@ -138,6 +139,7 @@ int LandRecord::convertHeightMapToDiff()
 
   // point (0, 0) = float offset, soooo....
   this->Unknown1 = round(this->HeightMap[0][0]);
+  std::cout << "offset: " << this->Unknown1 << std::endl;
 
   // Now set the first column using the differential row offset vector...
   for (unsigned int i = 1; i < 65; i++)
@@ -197,6 +199,7 @@ int LandRecord::setDataValues(ModSubRecord subRecord)
   {
     float *data = (float *) subRecord.data.data();
     this->Unknown1 = data[0];
+    std::cout << "offset: " << this->Unknown1 << std::endl;
     char *data2 = (char *) &(data[1]);
     this->Unknown2 = data2[0];
     signed char *data3 = (signed char *) &(data2[1]);

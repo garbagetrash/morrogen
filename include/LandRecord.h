@@ -39,7 +39,7 @@ public:
 	// Set the height map as specified
 	int genFlatHeightMap(float offset);
 	int genCornerCaseTest(float offset);
-	int setHeightMap(signed char heightmap[65][65], float offset);
+	int setHeightMap(signed char heightmap[65][65]);
 	int printHeightMap(bool asciiHeightMapActive);
 	void asciiHeightToChar(char num, char *buf);
 
