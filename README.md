@@ -10,7 +10,8 @@ generator eventually through the use of a seed value so that I can have 32 bits
 worth of variety.  (I could do 64... but honestly, why?)
 
 ## Build Environment
-Using CMake, so build as normal.
+Using CMake, so build as normal.  Requires C++14 support from compiler, so
+think gcc 5+.
 
 ```bash
 $ mkdir build && cd build
@@ -26,3 +27,6 @@ Everything on here is helpful as well:
 http://www.uesp.net/wiki/Tes3Mod:File_Format
 
 Used the [Enchanted Editor](http://www.uesp.net/wiki/Tes3Mod:Enchanted_Editor) for verification of my parsing.
+
+[<img src="https://github.com/kaharrs/morrogen/screenshots/terrain.png">]()
+[<img src="https://github.com/kaharrs/morrogen/screenshots/terrain1.png">]()
