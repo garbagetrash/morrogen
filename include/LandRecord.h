@@ -21,59 +21,60 @@ class LandRecord: public ModRecord
 {
 public:
 
-	typedef struct {
-		signed char X;
-		signed char Y;
-		signed char Z;
-	} normals[65][65];
+  typedef struct {
+  	signed char X;
+  	signed char Y;
+  	signed char Z;
+  } normals[65][65];
 
-	// Set values from subrecords
-	int setDataValues(ModSubRecord subRecord);
+  // Set values from subrecords
+  int setDataValues(ModSubRecord subRecord);
 
-	// Set Cell location
-	int setCell(std::int32_t CellX, std::int32_t CellY);
+  // Set Cell location
+  int setCell(std::int32_t CellX, std::int32_t CellY);
 
-	// Set the Unknown to 0x09
-	int setUnknown();
+  // Set the Unknown to 0x09
+  int setUnknown();
 
-	// Set the height map as specified
-	int genFlatHeightMap(float offset);
-	int genCornerCaseTest(float offset);
-	int setHeightMap(signed char heightmap[65][65]);
-	int printHeightMap(bool asciiHeightMapActive);
-	void asciiHeightToChar(char num, char *buf);
+  // Set the height map as specified
+  int genFlatHeightMap(float offset);
+  int genCornerCaseTest(float offset);
+  int setHeightMap(std::int32_t heightmap[65][65]);
+  int printHeightMap(bool asciiHeightMapActive);
+  void asciiHeightToChar(char num, char *buf);
 
-	// Converts the height map from absolute values to differential
-	int convertHeightMapToDiff();
+  // Converts the height map from absolute values to differential
+  int convertHeightMapToDiff();
 
-	// Set the normal map as specified
-	int setNormalMap(normals normalmap);
+  // Set the normal map as specified
+  int setNormalMap(normals normalmap);
 
-	// Set the world map pixel array
-	int setWorldMapPixels(std::string pixelArray);
+  // Set the world map pixel array
+  int setWorldMapPixels(std::string pixelArray);
 
-	// Set the record size
-	int setRecordSize();
+  // Set the record size
+  int setRecordSize();
 
-	// Write the object to the raw mod data format
-	size_t exportToModFile(FILE *fid);
+  // Write the object to the raw mod data format
+  size_t exportToModFile(FILE *fid);
 
-	// Data
+  // Data
   std::int32_t CellX;
   std::int32_t CellY;
 
   std::uint32_t Unknown;
 
-	normals NormalMap;
+  normals NormalMap;
 
-	float Unknown1;
-	char Unknown2;
-	signed char HeightMap[65][65];
-	short Unknown3;
+  float Unknown1;
+  char Unknown2;
+  std::int32_t AbsHeightMap[65][65];
+  signed char DiffHeightMap[65][65];
+  short Unknown3;
 
-	// This is something to do with the world map color palette... a
-	// 9x9 grid of bytes, so 81 pixels.  0 is blue.
-	std::string WorldMapPixels;
+  // This is something to do with the world map color palette... a
+  // 9x9 grid of bytes, so 81 pixels.  0 is blue.
+  std::string WorldMapPixels;
 };
 
 #endif /* LANDRECORD_H_ */

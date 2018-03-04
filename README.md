@@ -30,3 +30,5 @@ Used the [Enchanted Editor](http://www.uesp.net/wiki/Tes3Mod:Enchanted_Editor) f
 
 ![Terrain](screenshots/terrain.png?raw=true)
 ![Trees](screenshots/trees.png?raw=true)
+![Mountains](screenshots/mountains.png?raw=true)
+![Islands](screenshots/islands.png?raw=true)

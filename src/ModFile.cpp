@@ -162,7 +162,8 @@ std::vector<CellRecord> ModFile::generateCellRecords(int cellXstart,
                                                      int cellYstart,
                                                      int cellYstop,
                                                      int flags,
-                                                     std::string region_name)
+                                                     std::string region_name,
+                                                     NoiseType type)
 {
   std::vector<CellRecord> cellRecords;
   int lenX = abs(cellXstop - cellXstart) + 1;
@@ -183,7 +184,7 @@ std::vector<CellRecord> ModFile::generateCellRecords(int cellXstart,
     for (int j = 0; j < lenY; j++)
     {
       CellRecord cellRecord = generateCellRecord("", lowX + i, lowY + j, flags,
-                                                 region_name);
+                                                 region_name, type);
       cellRecords.push_back(cellRecord);
     }
   }
@@ -196,8 +197,40 @@ float uniform_random(void)
   return (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX));
 }
 
+float heightmap_noise(float x, float y, NoiseType type)
+{
+  // Default
+  float octaves = 6.0;
+  float persistence = 0.5;
+  float scale = 0.25;
+  float loBound = -4.0;
+  float hiBound = 4.0;
+
+  // Noise types
+  if (type == NoiseType::shallow_large_islands)
+  {
+    octaves = 6.0;
+    persistence = 0.5;
+    scale = 0.25;
+    loBound = -4.0;
+    hiBound = 4.0;
+  }
+  else if(type == NoiseType::mountains_with_lakes)
+  {
+    octaves = 6.0;
+    persistence = 0.5;
+    scale = 0.25;
+    loBound = -4.0;
+    hiBound = 12.0;
+  }
+
+  return scaled_octave_noise_2d(octaves, persistence, scale, loBound, hiBound,
+                                x, y);
+}
+
 CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
-                                       int flags, std::string region_name)
+                                       int flags, std::string region_name,
+                                       NoiseType type)
 {
   CellRecord cellRecord;
   cellRecord.setIdString(id);
@@ -211,14 +244,15 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     PosRotData prdata;
     prdata.posX = 8192.0 * cellX + 8192.0 * uniform_random();
     prdata.posY = 8192.0 * cellY + 8192.0 * uniform_random();
-    float value = scaled_octave_noise_2d(7, 0.5, 1, 0, 1,
-                                         (prdata.posY / 8192.0),
-                                         (prdata.posX / 8192.0));
+    float value = heightmap_noise(prdata.posY / 8192.0, prdata.posX / 8192.0, type);
     prdata.posZ = value * 1024.0 + 200.0;
     prdata.rotX = 0.0;
     prdata.rotY = 0.0;
     prdata.rotZ = 2 * M_PI * uniform_random();
-    cellRecord.addObjectToCell(std::string(bc_trees[std::rand() % 13]), prdata);
+
+    if (prdata.posZ > -10.0) {
+      cellRecord.addObjectToCell(std::string(bc_trees[std::rand() % 13]), prdata);
+    }
   }
 
   cellRecord.setRecordSize();
@@ -229,7 +263,8 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
 std::vector<LandRecord> ModFile::generateLandRecords(int cellXstart,
                                                      int cellXstop,
                                                      int cellYstart,
-                                                     int cellYstop)
+                                                     int cellYstop,
+                                                     NoiseType type)
 {
   std::vector<LandRecord> landRecords;
   int lenX = abs(cellXstop - cellXstart) + 1;
@@ -249,7 +284,7 @@ std::vector<LandRecord> ModFile::generateLandRecords(int cellXstart,
   {
     for (int j = 0; j < lenY; j++)
     {
-      LandRecord landRecord = generateLandRecord(lowX + i, lowY + j);
+      LandRecord landRecord = generateLandRecord(lowX + i, lowY + j, type);
       landRecords.push_back(landRecord);
     }
   }
@@ -257,32 +292,27 @@ std::vector<LandRecord> ModFile::generateLandRecords(int cellXstart,
   return landRecords;
 }
 
-LandRecord ModFile::generateLandRecord(int cellX, int cellY)
+LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
 {
   LandRecord landRecord;
   landRecord.setCell(cellX, cellY);
   landRecord.setUnknown();
 
   // Create and set the height map
-  const float octaves = 7;
-  const float persistence = 0.5;
-  const float scale = 1;
-  const float loBound = 0;
-  const float hiBound = 128;
-  signed char heightmap[65][65];
+  std::int32_t heightmap[65][65];
   for (int i = 0; i < 65; i++)
   {
     const float x = i / 64.0 + cellY;
     for (int j = 0; j < 65; j++)
     {
       const float y = j / 64.0 + cellX;
-      float value = scaled_octave_noise_2d(octaves, persistence, scale, loBound, hiBound, x, y);
+      float value = 128 * heightmap_noise(x, y, type);
       heightmap[i][j] = round(value);
     }
   }
   // TODO: fix this so that heightmap is converted from actual heights to differential heights.
   landRecord.setHeightMap(heightmap);
-  landRecord.printHeightMap(false);
+  // landRecord.printHeightMap(false);
 
   // Create and set the normal map from the height map data
   LandRecord::normals normalmap;
@@ -319,7 +349,7 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY)
   }
   landRecord.setNormalMap(normalmap);
   landRecord.convertHeightMapToDiff();
-  landRecord.printHeightMap(false);
+  // landRecord.printHeightMap(false);
 
   // Set the world map pixels... all to whatever 0 is for now.
   std::string pixelMap;
@@ -332,16 +362,18 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY)
 
 int ModFile::generateNewLand(const char *filename, int cellXstart,
                              int cellXstop, int cellYstart, int cellYstop,
-                             unsigned int seed)
+                             NoiseType type, unsigned int seed)
 {
   // First create the CELL record(s)
   std::vector<CellRecord> cellRecords = generateCellRecords(cellXstart,
                                           cellXstop, cellYstart, cellYstop, 2,
-                                          std::string("Bitter Coast Region"));
+                                          std::string("Bitter Coast Region"),
+                                          type);
 
   // Now make the LAND record(s)
   std::vector<LandRecord> landRecords = generateLandRecords(cellXstart,
-                                          cellXstop, cellYstart, cellYstop);
+                                          cellXstop, cellYstart, cellYstop,
+                                          type);
 
   // Create header last, once we knew the number of records
   int nRecords = 2 * (abs(cellXstop - cellXstart) + 1) *

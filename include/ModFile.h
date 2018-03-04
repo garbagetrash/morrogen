@@ -16,6 +16,11 @@
 #include <string>
 #include <vector>
 
+enum class NoiseType {
+  shallow_large_islands,
+  mountains_with_lakes,
+};
+
 class ModFile {
 public:
   ModFile();
@@ -35,7 +40,8 @@ public:
 
   // Makes a new land cell at the given x, y location provide.
   int generateNewLand(const char *filename, int cellXstart, int cellXstop,
-                      int cellYstart, int cellYstop, unsigned int seed);
+                      int cellYstart, int cellYstop, NoiseType type,
+                      unsigned int seed);
 
   // Frees up the raw data buffer, and sets the size to 0.
   int freeRawDataBuffer();
@@ -57,21 +63,24 @@ private:
                                   std::uint32_t nRecords);
 
   CellRecord generateCellRecord(const char *id, int cellX, int cellY,
-                                int flags, std::string region_name);
+                                int flags, std::string region_name,
+                                NoiseType type);
 
-  LandRecord generateLandRecord(int cellX, int cellY);
+  LandRecord generateLandRecord(int cellX, int cellY, NoiseType type);
 
   std::vector<LandRecord> generateLandRecords(int cellXstart,
                                               int cellXstop,
                                               int cellYstart,
-                                              int cellYstop);
+                                              int cellYstop,
+                                              NoiseType type);
 
   std::vector<CellRecord> generateCellRecords(int cellXstart,
                                               int cellXstop,
                                               int cellYstart,
                                               int cellYstop,
                                               int flags,
-                                              std::string region_name);
+                                              std::string region_name,
+                                              NoiseType type);
 };
 
 #endif /* MODFILE_H_ */

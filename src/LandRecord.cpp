@@ -41,16 +41,16 @@ int LandRecord::setCell(std::int32_t CellX, std::int32_t CellY)
 
 int LandRecord::genFlatHeightMap(float offset)
 {
-  signed char temp[65][65];
-  memset(temp, 0, 65*65*sizeof(char));
+  std::int32_t temp[65][65];
+  memset(temp, 0, 65*65*sizeof(std::int32_t));
 
   return setHeightMap(temp);
 }
 
 int LandRecord::genCornerCaseTest(float offset)
 {
-  signed char temp[65][65];
-  memset(temp, 0, 65*65*sizeof(char));
+  std::int32_t temp[65][65];
+  memset(temp, 0, 65*65*sizeof(std::int32_t));
 
   temp[0][0] = 20;
   temp[1][1] = 15;
@@ -74,12 +74,12 @@ int LandRecord::genCornerCaseTest(float offset)
   return setHeightMap(temp);
 }
 
-int LandRecord::setHeightMap(signed char heightmap[65][65])
+int LandRecord::setHeightMap(std::int32_t heightmap[65][65])
 {
   this->Unknown1 = heightmap[0][0];
   this->Unknown2 = 0x00;
   this->Unknown3 = 0x0000;
-  memcpy(this->HeightMap, heightmap, 65*65);
+  memcpy(this->AbsHeightMap, heightmap, 65*65 * sizeof(std::int32_t));
   return 1;
 }
 
@@ -93,12 +93,12 @@ int LandRecord::printHeightMap(bool asciiHeightMapActive)
       if (asciiHeightMapActive)
       {
         char value[2];
-        asciiHeightToChar(this->HeightMap[i][j], value);
+        asciiHeightToChar(this->AbsHeightMap[i][j], value);
         printf("%s ", value);
       }
       else
       {
-        printf("% 4d", this->HeightMap[i][j]);
+        printf("% 4d", this->AbsHeightMap[i][j]);
       }
     }
     printf("\n");
@@ -138,13 +138,13 @@ int LandRecord::convertHeightMapToDiff()
   memset(temp, 0, 65 * 65 * sizeof(char));
 
   // point (0, 0) = float offset, soooo....
-  this->Unknown1 = round(this->HeightMap[0][0]);
+  this->Unknown1 = round(this->AbsHeightMap[0][0]);
   std::cout << "offset: " << this->Unknown1 << std::endl;
 
   // Now set the first column using the differential row offset vector...
   for (unsigned int i = 1; i < 65; i++)
   {
-    temp[i-1][64] = this->HeightMap[i][0] - this->HeightMap[i-1][0];
+    temp[i-1][64] = this->AbsHeightMap[i][0] - this->AbsHeightMap[i-1][0];
   }
 
   // Now set all the other 64 columns using the differential row offset vector AND
@@ -153,11 +153,11 @@ int LandRecord::convertHeightMapToDiff()
   {
     for (unsigned int j = 0; j < 64; j++)
     {
-      temp[i][j] = this->HeightMap[i][j+1] - this->HeightMap[i][j];
+      temp[i][j] = this->AbsHeightMap[i][j+1] - this->AbsHeightMap[i][j];
     }
   }
 
-  memcpy(&(this->HeightMap), temp, 65*65);
+  memcpy(&(this->DiffHeightMap), temp, 65*65);
 
   return 1;
 }
@@ -203,7 +203,7 @@ int LandRecord::setDataValues(ModSubRecord subRecord)
     char *data2 = (char *) &(data[1]);
     this->Unknown2 = data2[0];
     signed char *data3 = (signed char *) &(data2[1]);
-    memcpy(this->HeightMap, data3, 65*65);
+    memcpy(this->DiffHeightMap, data3, 65*65);
     short *data4 = (short *) &(data3[65*65]);
     this->Unknown3 = data4[0];
   }
@@ -282,7 +282,7 @@ size_t LandRecord::exportToModFile(FILE *fid)
   totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->Unknown1), sizeof(float), 1, fid);
   totalSize += fwrite(&(this->Unknown2), sizeof(char), 1, fid);
-  totalSize += fwrite(&(this->HeightMap), sizeof(char), 65 * 65, fid);
+  totalSize += fwrite(&(this->DiffHeightMap), sizeof(char), 65 * 65, fid);
   totalSize += fwrite(&(this->Unknown3), sizeof(short), 1, fid);
 
   // WNAM subrecord
