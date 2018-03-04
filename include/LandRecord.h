@@ -22,9 +22,9 @@ class LandRecord: public ModRecord
 public:
 
   typedef struct {
-  	signed char X;
-  	signed char Y;
-  	signed char Z;
+    signed char X;
+    signed char Y;
+    signed char Z;
   } normals[65][65];
 
   // Set values from subrecords
@@ -32,6 +32,9 @@ public:
 
   // Set Cell location
   int setCell(std::int32_t CellX, std::int32_t CellY);
+
+  // Set the VTEX indices subrecord data
+  void setVtexIndices(std::uint16_t indices[16][16]);
 
   // Set the Unknown to 0x09
   int setUnknown();
@@ -75,6 +78,10 @@ public:
   // This is something to do with the world map color palette... a
   // 9x9 grid of bytes, so 81 pixels.  0 is blue.
   std::string WorldMapPixels;
+
+  // Optional VTEX texture indices
+  bool UsingVtex = false;
+  std::uint16_t Vtex[16][16];
 };
 
 #endif /* LANDRECORD_H_ */

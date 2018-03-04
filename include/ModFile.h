@@ -11,6 +11,7 @@
 #include "CellRecord.h"
 #include "FileHeaderRecord.h"
 #include "LandRecord.h"
+#include "LtexRecord.h"
 #include "ModRecord.h"
 
 #include <string>
@@ -68,6 +69,8 @@ private:
 
   LandRecord generateLandRecord(int cellX, int cellY, NoiseType type);
 
+  LtexRecord generateLtexRecord(const LtexPair &pair, std::uint32_t index);
+
   std::vector<LandRecord> generateLandRecords(int cellXstart,
                                               int cellXstop,
                                               int cellYstart,
@@ -81,6 +84,8 @@ private:
                                               int flags,
                                               std::string region_name,
                                               NoiseType type);
+
+  std::vector<LtexRecord> generateLtexRecords(std::vector<LtexPair> textureSet);
 };
 
 #endif /* MODFILE_H_ */

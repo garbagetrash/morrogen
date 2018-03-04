@@ -39,6 +39,12 @@ int LandRecord::setCell(std::int32_t CellX, std::int32_t CellY)
   return 1;
 }
 
+void LandRecord::setVtexIndices(std::uint16_t indices[16][16])
+{
+  memcpy(this->Vtex, indices, (16 * 16) * sizeof(std::uint16_t));
+  this->UsingVtex = true;
+}
+
 int LandRecord::genFlatHeightMap(float offset)
 {
   std::int32_t temp[65][65];
@@ -242,6 +248,12 @@ int LandRecord::setRecordSize()
   // WNAM - subrecord header + (9*9 char) WorldMapPixels
   size += 81 * sizeof(char) + 8;
 
+  // VTEX - subrecord header + (16*16 uint16_t) vtex
+  if (this->UsingVtex)
+  {
+    size += (16 * 16) * sizeof(std::uint16_t) + 8;
+  }
+
   this->size = size;
 
   return 1;
@@ -290,6 +302,15 @@ size_t LandRecord::exportToModFile(FILE *fid)
   size = 81 * sizeof(char);
   totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->WorldMapPixels), sizeof(char), 81, fid);
+
+  // VTEX subrecord
+  if (this->UsingVtex)
+  {
+    totalSize += fwrite("VTEX", sizeof(char), 4, fid);
+    size = 16 * 16 * sizeof(std::uint16_t);
+    totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
+    totalSize += fwrite(this->Vtex, sizeof(std::uint16_t), 16 * 16, fid);
+  }
 
   return totalSize;
 }

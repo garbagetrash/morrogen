@@ -10,6 +10,7 @@ add_executable(MorroGen
   src/FileHeaderRecord.cpp
   src/json.cpp
   src/LandRecord.cpp
+  src/LtexRecord.cpp
   src/ModFile.cpp
   src/ModRecord.cpp
   src/ModSubRecord.cpp

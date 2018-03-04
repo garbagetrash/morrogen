@@ -21,6 +21,7 @@
 #include "FileHeaderRecord.h"
 #include "CellRecord.h"
 #include "LandRecord.h"
+#include "LtexRecord.h"
 
 static const std::vector<std::string> bc_trees = {
   "flora_bc_tree_01",
@@ -355,9 +356,55 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
   std::string pixelMap;
   pixelMap.assign(81, 0);
   landRecord.setWorldMapPixels(pixelMap);
+
+  // Set the texture indices
+  std::uint16_t indices[16][16];
+  for (int i = 0; i < 16; i++)
+  {
+    for (int j = 0; j < 16; j++)
+    {
+      std::int32_t height = heightmap[4 * i + 2][4 * j + 2];
+      if (height < 10)
+      {
+        // Sand
+        indices[i][j] = 2;
+      } else {
+        // Not sand
+        indices[i][j] = 1;
+      }
+    }
+  }
+  landRecord.setVtexIndices(indices);
+
   landRecord.setRecordSize();
 
   return landRecord;
+}
+
+std::vector<LtexRecord> ModFile::generateLtexRecords(std::vector<LtexPair> textureSet)
+{
+  std::vector<LtexRecord> ltexRecords;
+
+  for (int i = 0; i < textureSet.size(); i++)
+  {
+    LtexRecord ltexRecord = generateLtexRecord(textureSet[i], i);
+    ltexRecords.push_back(ltexRecord);
+  }
+
+  return ltexRecords;
+}
+
+LtexRecord ModFile::generateLtexRecord(const LtexPair &pair, std::uint32_t index)
+{
+  LtexRecord ltexRecord;
+
+  ltexRecord.setId(pair.Id);
+  ltexRecord.setIndex(index);
+  ltexRecord.setTexturePath(pair.TexturePath);
+
+  ltexRecord.setRecordSize();
+
+  return ltexRecord;
 }
 
 int ModFile::generateNewLand(const char *filename, int cellXstart,
@@ -375,9 +422,11 @@ int ModFile::generateNewLand(const char *filename, int cellXstart,
                                           cellXstop, cellYstart, cellYstop,
                                           type);
 
+  // Now make the LTEX record(s)
+  std::vector<LtexRecord> ltexRecords = generateLtexRecords(BC_Textures);
+
   // Create header last, once we knew the number of records
-  int nRecords = 2 * (abs(cellXstop - cellXstart) + 1) *
-                     (abs(cellYstop - cellYstart) + 1);
+  int nRecords = cellRecords.size() + landRecords.size() + ltexRecords.size();
   FileHeaderRecord header = generateHeader(filename, nRecords);
 
   // Write to the file
@@ -390,6 +439,10 @@ int ModFile::generateNewLand(const char *filename, int cellXstart,
 
   for (unsigned int i=0; i < landRecords.size(); i++) {
     totalSize += landRecords[i].exportToModFile(fid);
+  }
+
+  for (unsigned int i=0; i < ltexRecords.size(); i++) {
+    totalSize += ltexRecords[i].exportToModFile(fid);
   }
 
   fclose(fid);
