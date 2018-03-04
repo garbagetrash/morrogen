@@ -13,6 +13,20 @@
 #include <string>
 #include <vector>
 
+struct PosRotData {
+  float posX;
+  float posY;
+  float posZ;
+  float rotX;
+  float rotY;
+  float rotZ;
+};
+
+struct ObjectReference {
+  std::string name;
+  PosRotData data;
+};
+
 class CellRecord: public ModRecord
 {
 public:
@@ -29,6 +43,9 @@ public:
   // Set values from subrecords
   int setDataValues(ModSubRecord subRecord);
 
+  // Add object to cell record
+  void addObjectToCell(std::string name, PosRotData data);
+
   // Set the record size
   int setRecordSize();
 
@@ -44,6 +61,7 @@ public:
   int GridY;
 
   std::string RegionName;
+  std::vector<ObjectReference> objectReferences;
 };
 
 #endif /* CELLRECORD_H_ */

@@ -34,9 +34,8 @@ public:
   int setRawDataFromFile(const char *fileName);
 
   // Makes a new land cell at the given x, y location provide.
-  int generateNewLand(const char *filename,
-                      int cellX, int cellY,
-                      unsigned int seed);
+  int generateNewLand(const char *filename, int cellXstart, int cellXstop,
+                      int cellYstart, int cellYstop, unsigned int seed);
 
   // Frees up the raw data buffer, and sets the size to 0.
   int freeRawDataBuffer();
@@ -54,7 +53,8 @@ public:
 private:
   int writeStringToFile(const char *fileName, std::string input);
 
-  FileHeaderRecord generateHeader(const char *filename);
+  FileHeaderRecord generateHeader(const char *filename,
+                                  std::uint32_t nRecords);
 
   CellRecord generateCellRecord(const char *id, int cellX, int cellY,
                                 int flags, std::string region_name);

@@ -182,6 +182,17 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
   cellRecord.setIdString(id);
   cellRecord.setGridAndFlags(cellX, cellY, flags);
   cellRecord.setRegionName(region_name);
+  PosRotData prdata;
+  prdata.posX = 8192.0 * cellX + 4096.0;
+  prdata.posY = 8192.0 * cellY + 4096.0;
+  float value = scaled_octave_noise_2d(7, 0.5, 1, 0, 1,
+                                       (prdata.posY / 8192.0),
+                                       (prdata.posX / 8192.0));
+  prdata.posZ = value * 1024.0;
+  prdata.rotX = 0.0;
+  prdata.rotY = 0.0;
+  prdata.rotZ = 0.0;
+  cellRecord.addObjectToCell(std::string("terrain_rock_ai_02"), prdata);
   cellRecord.setRecordSize();
 
   return cellRecord;
@@ -291,26 +302,32 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY)
   return landRecord;
 }
 
-int ModFile::generateNewLand(const char *filename, int cellX, int cellY,
+int ModFile::generateNewLand(const char *filename, int cellXstart,
+                             int cellXstop, int cellYstart, int cellYstop,
                              unsigned int seed)
 {
-  // BUT EVEN BEFORE THAT create the TES3 file header
-  FileHeaderRecord header = generateHeader(filename);
+  // First create the CELL record(s)
+  std::vector<CellRecord> cellRecords = generateCellRecords(cellXstart,
+                                          cellXstop, cellYstart, cellYstop, 2,
+                                          std::string("Bitter Coast Region"));
+
+  // Now make the LAND record(s)
+  std::vector<LandRecord> landRecords = generateLandRecords(cellXstart,
+                                          cellXstop, cellYstart, cellYstop);
+
+  // Create header last, once we knew the number of records
+  int nRecords = 2 * (abs(cellXstop - cellXstart) + 1) *
+                     (abs(cellYstop - cellYstart) + 1);
+  FileHeaderRecord header = generateHeader(filename, nRecords);
+
+  // Write to the file
   FILE *fid = fopen(filename, "wb");
   size_t totalSize = header.exportToModFile(fid);
-
-  // First create the CELL record(s)
-  std::vector<CellRecord> cellRecords = generateCellRecords(-15, -14, 2, 3, 2,
-                                          std::string("Bitter Coast Region"));
 
   for (unsigned int i=0; i < cellRecords.size(); i++) {
     totalSize += cellRecords[i].exportToModFile(fid);
   }
 
-  // Now make the LAND record(s)
-  std::vector<LandRecord> landRecords = generateLandRecords(-18, -14, 0, 3);
-
-  // Now write landRecord to the active mod file
   for (unsigned int i=0; i < landRecords.size(); i++) {
     totalSize += landRecords[i].exportToModFile(fid);
   }
@@ -392,12 +409,13 @@ int ModFile::writeStringToFile(const char *fileName, std::string input)
   return 1;
 }
 
-FileHeaderRecord ModFile::generateHeader(const char *filename)
+FileHeaderRecord ModFile::generateHeader(const char *filename,
+                                         std::uint32_t nRecords)
 {
   FileHeaderRecord header;
   std::string asdf;
   asdf.assign (256, 0);
-  header.setHedrSubRecord(1.3, 1, "asdf", asdf, 3);
+  header.setHedrSubRecord(1.3, 1, "asdf", asdf, nRecords);
   std::vector< std::string > masterEsms;
   masterEsms.push_back("Morrowind.esm");
   masterEsms.push_back("Bloodmoon.esm");

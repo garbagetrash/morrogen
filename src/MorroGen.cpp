@@ -25,7 +25,7 @@ void parse_existing_file(const char *filename) {
 void create_new_terrain_mod() {
   // Generate new mod
   std::unique_ptr<ModFile> newMod = std::make_unique<ModFile>();
-  newMod->generateNewLand("NewLandMod.esp", -15, 5, 0);
+  newMod->generateNewLand("NewLandMod.esp", -18, -14, 0, 5, 0);
 }
 
 int main(void) {
