@@ -29,4 +29,4 @@ http://www.uesp.net/wiki/Tes3Mod:File_Format
 Used the [Enchanted Editor](http://www.uesp.net/wiki/Tes3Mod:Enchanted_Editor) for verification of my parsing.
 
 ![Terrain](screenshots/terrain.png?raw=true)
-![Terrain 2](screenshots/terrain1.png?raw=true)
+![Trees](screenshots/trees.png?raw=true)

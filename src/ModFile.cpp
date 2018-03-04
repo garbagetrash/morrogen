@@ -22,6 +22,22 @@
 #include "CellRecord.h"
 #include "LandRecord.h"
 
+static const std::vector<std::string> bc_trees = {
+  "flora_bc_tree_01",
+  "flora_bc_tree_02",
+  "flora_bc_tree_03",
+  "flora_bc_tree_04",
+  "flora_bc_tree_05",
+  "flora_bc_tree_06",
+  "flora_bc_tree_07",
+  "flora_bc_tree_08",
+  "flora_bc_tree_09",
+  "flora_bc_tree_10",
+  "flora_bc_tree_11",
+  "flora_bc_tree_12",
+  "flora_bc_tree_13",
+};
+
 ModFile::ModFile() {
   // TODO Auto-generated constructor stub
 
@@ -175,6 +191,11 @@ std::vector<CellRecord> ModFile::generateCellRecords(int cellXstart,
   return cellRecords;
 }
 
+float uniform_random(void)
+{
+  return (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX));
+}
+
 CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
                                        int flags, std::string region_name)
 {
@@ -182,17 +203,24 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
   cellRecord.setIdString(id);
   cellRecord.setGridAndFlags(cellX, cellY, flags);
   cellRecord.setRegionName(region_name);
-  PosRotData prdata;
-  prdata.posX = 8192.0 * cellX + 4096.0;
-  prdata.posY = 8192.0 * cellY + 4096.0;
-  float value = scaled_octave_noise_2d(7, 0.5, 1, 0, 1,
-                                       (prdata.posY / 8192.0),
-                                       (prdata.posX / 8192.0));
-  prdata.posZ = value * 1024.0;
-  prdata.rotX = 0.0;
-  prdata.rotY = 0.0;
-  prdata.rotZ = 0.0;
-  cellRecord.addObjectToCell(std::string("terrain_rock_ai_02"), prdata);
+
+  int n_trees = 100;
+
+  for (int i = 0; i < n_trees; i++)
+  {
+    PosRotData prdata;
+    prdata.posX = 8192.0 * cellX + 8192.0 * uniform_random();
+    prdata.posY = 8192.0 * cellY + 8192.0 * uniform_random();
+    float value = scaled_octave_noise_2d(7, 0.5, 1, 0, 1,
+                                         (prdata.posY / 8192.0),
+                                         (prdata.posX / 8192.0));
+    prdata.posZ = value * 1024.0 + 200.0;
+    prdata.rotX = 0.0;
+    prdata.rotY = 0.0;
+    prdata.rotZ = 2 * M_PI * uniform_random();
+    cellRecord.addObjectToCell(std::string(bc_trees[std::rand() % 13]), prdata);
+  }
+
   cellRecord.setRecordSize();
 
   return cellRecord;
