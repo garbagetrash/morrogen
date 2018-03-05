@@ -18,26 +18,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "FileHeaderRecord.h"
 #include "CellRecord.h"
+#include "FileHeaderRecord.h"
 #include "LandRecord.h"
 #include "LtexRecord.h"
-
-static const std::vector<std::string> bc_trees = {
-  "flora_bc_tree_01",
-  "flora_bc_tree_02",
-  "flora_bc_tree_03",
-  "flora_bc_tree_04",
-  "flora_bc_tree_05",
-  "flora_bc_tree_06",
-  "flora_bc_tree_07",
-  "flora_bc_tree_08",
-  "flora_bc_tree_09",
-  "flora_bc_tree_10",
-  "flora_bc_tree_11",
-  "flora_bc_tree_12",
-  "flora_bc_tree_13",
-};
+#include "Resources.h"
 
 ModFile::ModFile() {
   // TODO Auto-generated constructor stub
@@ -246,13 +231,15 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     prdata.posX = 8192.0 * cellX + 8192.0 * uniform_random();
     prdata.posY = 8192.0 * cellY + 8192.0 * uniform_random();
     float value = heightmap_noise(prdata.posY / 8192.0, prdata.posX / 8192.0, type);
-    prdata.posZ = value * 1024.0 + 200.0;
+    prdata.posZ = value * 1024.0;
     prdata.rotX = 0.0;
     prdata.rotY = 0.0;
     prdata.rotZ = 2 * M_PI * uniform_random();
 
     if (prdata.posZ > -10.0) {
-      cellRecord.addObjectToCell(std::string(bc_trees[std::rand() % 13]), prdata);
+      Object tree = TreeSets::BC[std::rand() % 13];
+      prdata.posZ += tree.zOffset;
+      cellRecord.addObjectToCell(tree.Id, prdata);
     }
   }
 
