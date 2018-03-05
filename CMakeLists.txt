@@ -15,6 +15,7 @@ add_executable(MorroGen
   src/ModRecord.cpp
   src/ModSubRecord.cpp
   src/MorroGen.cpp
+  src/Resources.cpp
   src/simplexnoise.cpp
   )
 

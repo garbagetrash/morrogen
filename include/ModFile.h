@@ -13,6 +13,7 @@
 #include "LandRecord.h"
 #include "LtexRecord.h"
 #include "ModRecord.h"
+#include "Resources.h"
 
 #include <string>
 #include <vector>
@@ -85,7 +86,7 @@ private:
                                               std::string region_name,
                                               NoiseType type);
 
-  std::vector<LtexRecord> generateLtexRecords(std::vector<LtexPair> textureSet);
+  std::vector<LtexRecord> generateLtexRecords(const std::vector<LtexPair> textureSet);
 };
 
 #endif /* MODFILE_H_ */

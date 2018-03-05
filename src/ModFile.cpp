@@ -237,7 +237,7 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     prdata.rotZ = 2 * M_PI * uniform_random();
 
     if (prdata.posZ > -10.0) {
-      Object tree = TreeSets::BC[std::rand() % 13];
+      StaticObject tree = TreeSets::BC[std::rand() % 13];
       prdata.posZ += tree.zOffset;
       cellRecord.addObjectToCell(tree.Id, prdata);
     }
@@ -410,7 +410,7 @@ int ModFile::generateNewLand(const char *filename, int cellXstart,
                                           type);
 
   // Now make the LTEX record(s)
-  std::vector<LtexRecord> ltexRecords = generateLtexRecords(BC_Textures);
+  std::vector<LtexRecord> ltexRecords = generateLtexRecords(TextureSets::BC);
 
   // Create header last, once we knew the number of records
   int nRecords = cellRecords.size() + landRecords.size() + ltexRecords.size();
