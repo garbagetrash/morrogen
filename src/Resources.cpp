@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+
+// Bitter Coast
 const std::vector<StaticObject> TreeSets::BC = {
   {"flora_bc_tree_01", 440.0},
   {"flora_bc_tree_02", 510.0},
@@ -38,3 +40,29 @@ const std::vector<LtexPair> TextureSets::BC = {
   {"Tx_BC_rockyscrub.tga",  "Tx_BC_rockyscrub.tga"},
 };
 
+// Ascadian Isles
+const std::vector<StaticObject> TreeSets::AI = {
+  {"flora_tree_ai_01", 260.0},
+  {"flora_tree_ai_02", 480.0},
+  {"flora_tree_ai_03", 375.0},
+  {"flora_tree_ai_04", 630.0},
+  {"flora_tree_ai_05", 350.0},
+  {"flora_tree_ai_06", 460.0},
+  {"flora_emp_parasol_01", 315.0},
+  {"flora_emp_parasol_02", 430.0},
+  {"flora_emp_parasol_03", 330.0},
+};
+
+const std::vector<LtexPair> TextureSets::AI = {
+  {"Tx_AI_mainroad_01.tga", "Tx_AI_mainroad_01.tga"},
+  {"Tx_AI_mudflats_01.tga", "Tx_AI_mudflats_01.tga"},
+  {"AI_Tilled_Dirt", "Tx_AI_tilled_dirt_01.tga"},
+  {"AI_Grass_02", "Tx_AI_grass_01.tga"},
+  {"AI_Clover", "Tx_AI_clover_02.tga"},
+  {"AI_Dirt", "Tx_AI_dirt_01.tga"},
+  {"AI_Dirtroad", "Tx_AI_dirtroad_01.tga"},
+  {"AI_Grass_Dirt", "Tx_AI_grass_dirt_01.tga"},
+  {"AI_Grass", "Tx_grass_01.tga"},
+  {"AI_Grass_Rocky", "Tx_grass_rocky_01.tga"},
+  {"AI_Grass_Cobbles", "Tx_cobblestone_01.tga"},
+};
