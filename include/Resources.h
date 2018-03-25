@@ -11,6 +11,11 @@
 #include <string>
 #include <vector>
 
+enum RegionType {
+  BITTER_COAST = 1,
+  ASCADIAN_ISLES,
+};
+
 typedef struct StaticObject {
   std::string Id;
   float zOffset;
@@ -19,6 +24,7 @@ typedef struct StaticObject {
 class TreeSets {
 public:
   static const std::vector<StaticObject> BC;
+  static const std::vector<StaticObject> AI;
 };
 
 typedef struct LtexPair {
@@ -29,6 +35,7 @@ typedef struct LtexPair {
 class TextureSets {
 public:
   static const std::vector<LtexPair> BC;
+  static const std::vector<LtexPair> AI;
 };
 
 #endif /* RESOURCES_H_ */

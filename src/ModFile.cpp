@@ -149,7 +149,8 @@ std::vector<CellRecord> ModFile::generateCellRecords(int cellXstart,
                                                      int cellYstop,
                                                      int flags,
                                                      std::string region_name,
-                                                     NoiseType type)
+                                                     NoiseType type,
+                                                     RegionType region_type)
 {
   std::vector<CellRecord> cellRecords;
   int lenX = abs(cellXstop - cellXstart) + 1;
@@ -170,7 +171,8 @@ std::vector<CellRecord> ModFile::generateCellRecords(int cellXstart,
     for (int j = 0; j < lenY; j++)
     {
       CellRecord cellRecord = generateCellRecord("", lowX + i, lowY + j, flags,
-                                                 region_name, type);
+                                                 region_name, type,
+                                                 region_type);
       cellRecords.push_back(cellRecord);
     }
   }
@@ -216,7 +218,7 @@ float heightmap_noise(float x, float y, NoiseType type)
 
 CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
                                        int flags, std::string region_name,
-                                       NoiseType type)
+                                       NoiseType type, RegionType region_type)
 {
   CellRecord cellRecord;
   cellRecord.setIdString(id);
@@ -237,7 +239,16 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     prdata.rotZ = 2 * M_PI * uniform_random();
 
     if (prdata.posZ > -10.0) {
-      StaticObject tree = TreeSets::BC[std::rand() % 13];
+      std::vector<StaticObject> tree_set;
+      switch(region_type) {
+        case(RegionType::BITTER_COAST):
+          tree_set = TreeSets::BC;
+          break;
+        case(RegionType::ASCADIAN_ISLES):
+          tree_set = TreeSets::AI;
+          break;
+      }
+      StaticObject tree = tree_set[std::rand() % tree_set.size()];
       prdata.posZ += tree.zOffset;
       cellRecord.addObjectToCell(tree.Id, prdata);
     }
@@ -396,13 +407,14 @@ LtexRecord ModFile::generateLtexRecord(const LtexPair &pair, std::uint32_t index
 
 int ModFile::generateNewLand(const char *filename, int cellXstart,
                              int cellXstop, int cellYstart, int cellYstop,
-                             NoiseType type, unsigned int seed)
+                             NoiseType type, RegionType region_type,
+                             unsigned int seed)
 {
   // First create the CELL record(s)
   std::vector<CellRecord> cellRecords = generateCellRecords(cellXstart,
                                           cellXstop, cellYstart, cellYstop, 2,
                                           std::string("Bitter Coast Region"),
-                                          type);
+                                          type, region_type);
 
   // Now make the LAND record(s)
   std::vector<LandRecord> landRecords = generateLandRecords(cellXstart,

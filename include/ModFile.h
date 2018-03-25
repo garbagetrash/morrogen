@@ -43,7 +43,7 @@ public:
   // Makes a new land cell at the given x, y location provide.
   int generateNewLand(const char *filename, int cellXstart, int cellXstop,
                       int cellYstart, int cellYstop, NoiseType type,
-                      unsigned int seed);
+                      RegionType region_type, unsigned int seed);
 
   // Frees up the raw data buffer, and sets the size to 0.
   int freeRawDataBuffer();
@@ -66,7 +66,7 @@ private:
 
   CellRecord generateCellRecord(const char *id, int cellX, int cellY,
                                 int flags, std::string region_name,
-                                NoiseType type);
+                                NoiseType type, RegionType region_type);
 
   LandRecord generateLandRecord(int cellX, int cellY, NoiseType type);
 
@@ -84,7 +84,8 @@ private:
                                               int cellYstop,
                                               int flags,
                                               std::string region_name,
-                                              NoiseType type);
+                                              NoiseType type,
+                                              RegionType region_type);
 
   std::vector<LtexRecord> generateLtexRecords(const std::vector<LtexPair> textureSet);
 };
