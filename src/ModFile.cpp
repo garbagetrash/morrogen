@@ -211,6 +211,14 @@ float heightmap_noise(float x, float y, NoiseType type)
     loBound = -4.0;
     hiBound = 12.0;
   }
+  else if(type == NoiseType::broad_low_hills)
+  {
+    octaves = 5.0;
+    persistence = 0.5;
+    scale = 0.25;
+    loBound = -1.0;
+    hiBound = 3.0;
+  }
 
   return scaled_octave_noise_2d(octaves, persistence, scale, loBound, hiBound,
                                 x, y);
@@ -225,7 +233,23 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
   cellRecord.setGridAndFlags(cellX, cellY, flags);
   cellRecord.setRegionName(region_name);
 
-  int n_trees = 100;
+  // Determine tree_set and n_tress based on region type
+  std::vector<StaticObject> tree_set;
+  int n_trees = 10;
+  switch(region_type) {
+    case(RegionType::ASCADIAN_ISLES):
+      tree_set = TreeSets::AI;
+      n_trees = 50;
+      break;
+    case(RegionType::BITTER_COAST):
+      tree_set = TreeSets::BC;
+      n_trees = 100;
+      break;
+    case(RegionType::GRAZELANDS):
+      tree_set = TreeSets::GL;
+      n_trees = 10;
+      break;
+  }
 
   for (int i = 0; i < n_trees; i++)
   {
@@ -239,15 +263,6 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     prdata.rotZ = 2 * M_PI * uniform_random();
 
     if (prdata.posZ > -10.0) {
-      std::vector<StaticObject> tree_set;
-      switch(region_type) {
-        case(RegionType::BITTER_COAST):
-          tree_set = TreeSets::BC;
-          break;
-        case(RegionType::ASCADIAN_ISLES):
-          tree_set = TreeSets::AI;
-          break;
-      }
       StaticObject tree = tree_set[std::rand() % tree_set.size()];
       prdata.posZ += tree.zOffset;
       cellRecord.addObjectToCell(tree.Id, prdata);
@@ -422,7 +437,7 @@ int ModFile::generateNewLand(const char *filename, int cellXstart,
                                           type);
 
   // Now make the LTEX record(s)
-  std::vector<LtexRecord> ltexRecords = generateLtexRecords(TextureSets::BC);
+  std::vector<LtexRecord> ltexRecords = generateLtexRecords(TextureSets::GL);
 
   // Create header last, once we knew the number of records
   int nRecords = cellRecords.size() + landRecords.size() + ltexRecords.size();

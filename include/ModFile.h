@@ -21,6 +21,7 @@
 enum class NoiseType {
   shallow_large_islands,
   mountains_with_lakes,
+  broad_low_hills,
 };
 
 class ModFile {

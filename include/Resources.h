@@ -12,8 +12,10 @@
 #include <vector>
 
 enum RegionType {
-  BITTER_COAST = 1,
-  ASCADIAN_ISLES,
+  
+  ASCADIAN_ISLES = 1,
+  BITTER_COAST,
+  GRAZELANDS,
 };
 
 typedef struct StaticObject {
@@ -23,8 +25,16 @@ typedef struct StaticObject {
 
 class TreeSets {
 public:
-  static const std::vector<StaticObject> BC;
   static const std::vector<StaticObject> AI;
+  static const std::vector<StaticObject> BC;
+  static const std::vector<StaticObject> GL;
+};
+
+class RockSets {
+public:
+  static const std::vector<StaticObject> AI;
+  static const std::vector<StaticObject> BC;
+  static const std::vector<StaticObject> GL;
 };
 
 typedef struct LtexPair {
@@ -34,8 +44,9 @@ typedef struct LtexPair {
 
 class TextureSets {
 public:
-  static const std::vector<LtexPair> BC;
   static const std::vector<LtexPair> AI;
+  static const std::vector<LtexPair> BC;
+  static const std::vector<LtexPair> GL;
 };
 
 #endif /* RESOURCES_H_ */

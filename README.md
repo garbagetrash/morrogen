@@ -7,11 +7,11 @@ completion.
 
 So far I've gotten exterior heightmap generation working with a couple
 different types of noise, and I also implemented a basic uniformly distributed
-tree placement algorithm.  Right now I support Bitter Coast and Ascadian Isle
-trees with random rotations, I need to look at adding a random scaling factor,
-too, to help break up the uniformity of the trees.  Eventually I'd rather do
-proper distributions of flora, too, other than just a uniform distribution.  In
-real life you'd expect to see forests, clearing, and patches of trees.  Global
+tree placement algorithm.  Right now I support Bitter Coast, Ascadian Isle, and
+grazeland trees with random rotations, I need to look at adding a random scaling
+factor, too, to help break up the uniformity of the trees.  Eventually I'd rather
+do proper distributions of flora, too, other than just a uniform distribution.
+In real life you'd expect to see forests, clearing, and patches of trees.  Global
 structure is essential to avoiding your randomly generated content from looking
 just.... random.
 
@@ -68,3 +68,4 @@ Used the [Enchanted Editor](http://www.uesp.net/wiki/Tes3Mod:Enchanted_Editor) f
 ![Mountains](screenshots/mountains.png?raw=true)
 ![Islands](screenshots/islands.png?raw=true)
 ![Ascadian Isles 1](screenshots/ascadian_isles1.png?raw=true)
+![Grazelands](screenshots/grazelands.png?raw=true)
