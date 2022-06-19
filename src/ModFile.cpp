@@ -24,10 +24,7 @@
 #include "LtexRecord.h"
 #include "Resources.h"
 
-ModFile::ModFile() {
-  // TODO Auto-generated constructor stub
-
-}
+ModFile::ModFile() {}
 
 ModFile::ModFile(const char *fileName) {
   int result = setRawDataFromFile(fileName);
@@ -38,7 +35,6 @@ ModFile::ModFile(const char *fileName) {
 }
 
 ModFile::~ModFile() {
-  // TODO Auto-generated destructor stub
   int result = freeRawDataBuffer();
   if (result < 0)
   {
@@ -235,22 +231,27 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
 
   // Determine tree_set and n_tress based on region type
   std::vector<StaticObject> tree_set;
+  std::vector<StaticObject> building_set;
   int n_trees = 10;
   switch(region_type) {
     case(RegionType::ASCADIAN_ISLES):
       tree_set = TreeSets::AI;
       n_trees = 50;
+      building_set = BuildingSets::Shanty;
       break;
     case(RegionType::BITTER_COAST):
       tree_set = TreeSets::BC;
       n_trees = 100;
+      building_set = BuildingSets::Shanty;
       break;
     case(RegionType::GRAZELANDS):
       tree_set = TreeSets::GL;
       n_trees = 10;
+      building_set = BuildingSets::Shanty;
       break;
   }
 
+  // Randomly position trees around the cell
   for (int i = 0; i < n_trees; i++)
   {
     PosRotData prdata;
@@ -262,6 +263,7 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     prdata.rotY = 0.0;
     prdata.rotZ = 2 * M_PI * uniform_random();
 
+    // If the land here is at least close to the shoreline
     if (prdata.posZ > -10.0) {
       StaticObject tree = tree_set[std::rand() % tree_set.size()];
       prdata.posZ += tree.zOffset;
@@ -270,6 +272,23 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
   }
 
   cellRecord.setRecordSize();
+
+  // Put a village in the cell with some low probability
+  if (uniform_random() > 0.95) {
+
+    float value = -1.0;
+    do {
+      // Generate a position within the cell to act as the village center point
+      float xglobal = 8192.0 * (cellX + uniform_random());
+      float yglobal = 8192.0 * (cellY + uniform_random());
+
+      // Look up the height at this location with our generator function
+      value = 1024.0 * heightmap_noise(yglobal / 8192.0, xglobal / 8192.0, type);
+    } while (value <= 0.0);
+
+    // Now above the waterline
+    // TODO: Generate village logic here
+  }
 
   return cellRecord;
 }

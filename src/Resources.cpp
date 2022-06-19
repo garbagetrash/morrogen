@@ -17,7 +17,23 @@ const std::vector<StaticObject> TreeSets::AI = {
 };
 
 const std::vector<StaticObject> RockSets::AI = {
-  {"terrain_rock_gl_01", 10.0},
+  {"ex_ai_boulder06", 10.0},
+  {"ex_ai_boulder07", 10.0},
+  {"ex_ai_boulder08", 10.0},
+  {"Terrain_rocks_AI_01", 10.0},
+  {"Terrain_rocks_AI_03", 10.0},
+  {"terrain_rock_ai_01", 10.0},
+  {"terrain_rock_ai_02", 10.0},
+  {"terrain_rock_ai_03", 10.0},
+  {"terrain_rock_ai_04", 10.0},
+  {"terrain_rock_ai_05", 10.0},
+  {"terrain_rock_ai_06", 10.0},
+  {"terrain_rock_ai_07", 10.0},
+  {"terrain_rock_ai_08", 10.0},
+  {"terrain_rock_ai_09", 10.0},
+  {"terrain_rock_ai_10", 10.0},
+  {"terrain_rock_ai_11", 10.0},
+  {"terrain_rock_ai_12", 10.0},
 };
 
 const std::vector<LtexPair> TextureSets::AI = {
@@ -32,6 +48,14 @@ const std::vector<LtexPair> TextureSets::AI = {
   {"AI_Grass", "Tx_grass_01.tga"},
   {"AI_Grass_Rocky", "Tx_grass_rocky_01.tga"},
   {"AI_Grass_Cobbles", "Tx_cobblestone_01.tga"},
+};
+
+const std::vector<StaticObject> BuildingSets::Shanty {
+  {"ex_de_shack_01", 130.0},
+  {"ex_de_shack_02", 120.0},
+  {"ex_de_shack_03", 105.0},
+  {"ex_de_shack_04",   0.0},
+  {"ex_de_shack_05", -60.0},
 };
 
 // Bitter Coast

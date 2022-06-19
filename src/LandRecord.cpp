@@ -17,6 +17,21 @@
 #include <string>
 #include <sstream>
 
+LandRecord::LandRecord()
+{
+  this->CellX = 0;
+  this->CellY = 0;
+  this->Unknown = 0;
+  memset(&(this->NormalMap), 0, sizeof(normals));
+  this->Unknown1 = 0.0f;
+  this->Unknown2 = 0;
+  memset(&(this->AbsHeightMap), 0, 65 * 65 * sizeof(std::int32_t));
+  memset(&(this->DiffHeightMap), 0, 65 * 65 * sizeof(signed char));
+  this->Unknown3 = 0;
+  this->WorldMapPixels = std::string("");
+  memset(&(this->Vtex), 0, 16 * 16 * sizeof(std::uint16_t));
+}
+
 template < typename T > std::string to_string(T value)
 {
   std::ostringstream os;
@@ -269,6 +284,9 @@ size_t LandRecord::exportToModFile(FILE *fid)
   totalSize += fwrite(&(this->header1), sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->flags), sizeof(std::uint32_t), 1, fid);
 
+  printf("land\n");
+  fflush(stdout);
+
   // INTV subrecord
   totalSize += fwrite("INTV", sizeof(char), 4, fid);
   std::uint32_t size = 2 * sizeof(std::uint32_t);
@@ -276,17 +294,26 @@ size_t LandRecord::exportToModFile(FILE *fid)
   totalSize += fwrite(&(this->CellX), sizeof(std::int32_t), 1, fid);
   totalSize += fwrite(&(this->CellY), sizeof(std::int32_t), 1, fid);
 
+  printf("intv\n");
+  fflush(stdout);
+
   // DATA subrecord
   totalSize += fwrite("DATA", sizeof(char), 4, fid);
   size = sizeof(std::uint32_t);
   totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->Unknown), sizeof(std::uint32_t), 1, fid);
 
+  printf("data\n");
+  fflush(stdout);
+
   // VNML subrecord
   totalSize += fwrite("VNML", sizeof(char), 4, fid);
   size = 1 * sizeof(normals);
   totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->NormalMap), sizeof(normals), 1, fid);
+
+  printf("vnml\n");
+  fflush(stdout);
 
   // VHGT subrecord
   totalSize += fwrite("VHGT", sizeof(char), 4, fid);
@@ -297,11 +324,17 @@ size_t LandRecord::exportToModFile(FILE *fid)
   totalSize += fwrite(&(this->DiffHeightMap), sizeof(char), 65 * 65, fid);
   totalSize += fwrite(&(this->Unknown3), sizeof(short), 1, fid);
 
+  printf("vhgt\n");
+  fflush(stdout);
+
   // WNAM subrecord
   totalSize += fwrite("WNAM", sizeof(char), 4, fid);
   size = 81 * sizeof(char);
   totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
   totalSize += fwrite(&(this->WorldMapPixels), sizeof(char), 81, fid);
+
+  printf("wnam\n");
+  fflush(stdout);
 
   // VTEX subrecord
   if (this->UsingVtex)
@@ -311,6 +344,9 @@ size_t LandRecord::exportToModFile(FILE *fid)
     totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
     totalSize += fwrite(this->Vtex, sizeof(std::uint16_t), 16 * 16, fid);
   }
+
+  printf("vtex\n");
+  fflush(stdout);
 
   return totalSize;
 }

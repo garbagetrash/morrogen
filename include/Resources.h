@@ -12,7 +12,6 @@
 #include <vector>
 
 enum RegionType {
-  
   ASCADIAN_ISLES = 1,
   BITTER_COAST,
   GRAZELANDS,
@@ -35,6 +34,11 @@ public:
   static const std::vector<StaticObject> AI;
   static const std::vector<StaticObject> BC;
   static const std::vector<StaticObject> GL;
+};
+
+class BuildingSets {
+public:
+  static const std::vector<StaticObject> Shanty;
 };
 
 typedef struct LtexPair {

@@ -27,6 +27,8 @@ public:
     signed char Z;
   } normals[65][65];
 
+  LandRecord();
+
   // Set values from subrecords
   int setDataValues(ModSubRecord subRecord);
 
