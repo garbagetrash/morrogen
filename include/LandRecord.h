@@ -22,9 +22,9 @@ class LandRecord: public ModRecord
 public:
 
   typedef struct {
-    signed char X;
-    signed char Y;
-    signed char Z;
+    signed char X = 0;
+    signed char Y = 0;
+    signed char Z = 0;
   } normals[65][65];
 
   LandRecord();
@@ -36,6 +36,9 @@ public:
   int setCell(std::int32_t CellX, std::int32_t CellY);
 
   // Set the VTEX indices subrecord data
+  // Unsure, but I believe the 64x64 heightmap grid is turned into a 16x16 grid
+  // for texturing, and these indexes pick which texture to apply to each
+  // gridpoint given a list of textures to pick from.
   void setVtexIndices(std::uint16_t indices[16][16]);
 
   // Set the Unknown to 0x09
@@ -69,7 +72,7 @@ public:
 
   std::uint32_t Unknown;
 
-  normals NormalMap;
+  normals NormalMap = {};
 
   float Unknown1;
   char Unknown2;

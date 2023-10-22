@@ -10,7 +10,6 @@ add_library(morrogen
   src/BsaLoader.cpp
   src/CellRecord.cpp
   src/FileHeaderRecord.cpp
-  src/json.cpp
   src/LandRecord.cpp
   src/LtexRecord.cpp
   src/ModFile.cpp

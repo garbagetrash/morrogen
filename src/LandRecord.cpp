@@ -22,7 +22,7 @@ LandRecord::LandRecord()
   this->CellX = 0;
   this->CellY = 0;
   this->Unknown = 0;
-  memset(&(this->NormalMap), 0, sizeof(normals));
+  //memset(&(this->NormalMap), 0, sizeof(normals));
   this->Unknown1 = 0.0f;
   this->Unknown2 = 0;
   memset(&(this->AbsHeightMap), 0, 65 * 65 * sizeof(std::int32_t));

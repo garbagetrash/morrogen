@@ -53,8 +53,7 @@ public:
   int freeRecords();
 
   // Storage place for raw data file
-  char *rawData;
-  int nBytesRawData;
+  std::vector<char> rawData;
 
   // File is composed entirely of records
   std::vector<ModRecord> records;

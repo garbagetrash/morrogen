@@ -6,7 +6,6 @@
  */
 
 #include "ModFile.h"
-#include "json.h"
 #include "simplexnoise.h"
 
 #include <cstdint>
@@ -52,9 +51,9 @@ int ModFile::parseRawData()
   std::cout << "Beginning the parseRawData() call..." << std::endl;
 
   char *ptr, *start;
-  ptr = this->rawData;
+  ptr = this->rawData.data();
   start = ptr;
-  while (*ptr != '\0' && (ptr - start) < this->nBytesRawData)
+  while (*ptr != '\0' && (ptr - start) < this->rawData.size())
   {
     // Let record point to our current record
     ModRecord record;
@@ -103,38 +102,6 @@ int ModFile::parseRawData()
   }
 
   std::cout << "Completed parseRawData() call!" << std::endl;
-
-  return 1;
-}
-
-int ModFile::printToReadableFile()
-{
-  JsonNode *output = json_mkarray();
-
-  for (unsigned int i = 0; i < this->records.size(); i++)
-  {
-    // Make a new object for the record, and populate it
-    JsonNode *record = json_mkobject();
-    this->records[i].encodeToJSON(record);
-
-    // Add the record to the array of vectors
-    json_append_element(output, record);
-  }
-
-  char *outBuf = json_stringify(output, "\t");
-  int nChars = strlen(outBuf);
-
-  // Free up the json array
-  json_delete(output);
-
-  const char fileName[32] = "ModFile.json";
-  FILE *fid = fopen(fileName, "w");
-  fwrite(outBuf, sizeof(char), nChars, fid);
-  fclose(fid);
-
-  free(outBuf);
-
-  std::cout << "Wrote to " << fileName << " successfully!" << std::endl;
 
   return 1;
 }
@@ -273,6 +240,7 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
 
   cellRecord.setRecordSize();
 
+  /*
   // Put a village in the cell with some low probability
   if (uniform_random() > 0.95) {
 
@@ -289,7 +257,7 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
     // Now above the waterline
     // TODO: Generate village logic here
   }
-
+  */
   return cellRecord;
 }
 
@@ -444,10 +412,26 @@ int ModFile::generateNewLand(const char *filename, int cellXstart,
                              NoiseType type, RegionType region_type,
                              unsigned int seed)
 {
+  // Set the region name
+  std::string region_name;
+  switch(region_type) {
+    case(RegionType::ASCADIAN_ISLES):
+      region_name = std::string("Ascadian Isles Region");
+      break;
+    case(RegionType::BITTER_COAST):
+      region_name = std::string("Bitter Coast Region");
+      break;
+    case(RegionType::GRAZELANDS):
+      region_name = std::string("Grazelands Region");
+      break;
+    default:
+      // Just do the grazelands by default
+      region_name = std::string("Grazelands Region");
+  }
   // First create the CELL record(s)
   std::vector<CellRecord> cellRecords = generateCellRecords(cellXstart,
                                           cellXstop, cellYstart, cellYstop, 2,
-                                          std::string("Bitter Coast Region"),
+                                          region_name,
                                           type, region_type);
 
   // Now make the LAND record(s)
@@ -456,7 +440,21 @@ int ModFile::generateNewLand(const char *filename, int cellXstart,
                                           type);
 
   // Now make the LTEX record(s)
-  std::vector<LtexRecord> ltexRecords = generateLtexRecords(TextureSets::GL);
+  std::vector<LtexRecord> ltexRecords;
+  switch(region_type) {
+    case(RegionType::ASCADIAN_ISLES):
+      ltexRecords = generateLtexRecords(TextureSets::AI);
+      break;
+    case(RegionType::BITTER_COAST):
+      ltexRecords = generateLtexRecords(TextureSets::BC);
+      break;
+    case(RegionType::GRAZELANDS):
+      ltexRecords = generateLtexRecords(TextureSets::GL);
+      break;
+    default:
+      // Just do the grazelands by default
+      ltexRecords = generateLtexRecords(TextureSets::GL);
+  }
 
   // Create header last, once we knew the number of records
   int nRecords = cellRecords.size() + landRecords.size() + ltexRecords.size();
@@ -499,26 +497,20 @@ int ModFile::setRawDataFromFile(const char *fileName)
   rewind(fid);
 
   // Allocate memory
-  this->rawData = (char *) malloc (sizeof(char) * lSize);
-  if (this->rawData == 0) {
-    std::cout << "Memory allocation error!" << std::endl;
-    return -1;
-  }
+  this->rawData = std::vector<char>(0, lSize);
 
   // Read in the file
-  long result = fread(this->rawData, 1, lSize, fid);
+  long result = fread(this->rawData.data(), 1, lSize, fid);
   if (result != lSize) {
     std::cout << "Reading error!" << std::endl;
     return -1;
   }
 
-  this->nBytesRawData = (int) lSize;
-
   std::cout << "Successfully populated rawData!" << std::endl;
 
   char recordType[5];
   memset(recordType, 0, 5);
-  strncpy(recordType, this->rawData, 4);
+  strncpy(recordType, this->rawData.data(), 4);
   std::cout << "First record type: " << recordType << std::endl;
 
   // Tidy up
@@ -529,8 +521,7 @@ int ModFile::setRawDataFromFile(const char *fileName)
 
 int ModFile::freeRawDataBuffer()
 {
-  free(this->rawData);
-  this->nBytesRawData = 0;
+  this->rawData.clear();
 
   return 1;
 }

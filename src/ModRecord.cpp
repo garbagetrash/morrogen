@@ -62,32 +62,3 @@ int ModRecord::parseSubRecordsFromRawData() {
 
   return 1;
 }
-
-int ModRecord::encodeToJSON(JsonNode *record)
-{
-  printf("nameIs: %s\n", this->name);
-
-  char temp[10];
-  memset(temp, 0, 10);
-  json_append_member(record, "Name", json_mkstring(this->name));
-  sprintf(temp, "%d", this->size);
-  json_append_member(record, "Size", json_mkstring(temp));
-  sprintf(temp, "%x", this->header1);
-  json_append_member(record, "Header1", json_mkstring(temp));
-  sprintf(temp, "%x", this->flags);
-  json_append_member(record, "Flags", json_mkstring(temp));
-
-  JsonNode *subRecords = json_mkarray();
-  for (unsigned int i = 0; i < this->subRecords.size(); i++)
-  {
-    JsonNode *subRecord = json_mkobject();
-
-    this->subRecords[i].encodeToJSON(subRecord);
-
-    json_append_element(subRecords, subRecord);
-  }
-
-  json_append_member(record, "SubRecords", subRecords);
-
-  return 1;
-}
