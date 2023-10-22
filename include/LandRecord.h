@@ -51,9 +51,6 @@ public:
   int printHeightMap(bool asciiHeightMapActive);
   void asciiHeightToChar(char num, char *buf);
 
-  // Converts the height map from absolute values to differential
-  int convertHeightMapToDiff();
-
   // Set the normal map as specified
   int setNormalMap(normals normalmap);
 
@@ -77,7 +74,6 @@ public:
   float Unknown1;
   char Unknown2;
   std::int32_t AbsHeightMap[65][65];
-  signed char DiffHeightMap[65][65];
   short Unknown3;
 
   // This is something to do with the world map color palette... a
@@ -87,6 +83,12 @@ public:
   // Optional VTEX texture indices
   bool UsingVtex = false;
   std::uint16_t Vtex[16][16];
+
+private:
+  signed char DiffHeightMap[65][65];
+
+  // Converts the height map from absolute values to differential
+  int convertHeightMapToDiff();
 };
 
 #endif /* LANDRECORD_H_ */

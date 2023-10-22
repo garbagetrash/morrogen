@@ -311,9 +311,6 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
       heightmap[i][j] = round(value);
     }
   }
-  // TODO: fix this so that heightmap is converted from actual heights to differential heights.
-  landRecord.setHeightMap(heightmap);
-  // landRecord.printHeightMap(false);
 
   // Create and set the normal map from the height map data
   LandRecord::normals normalmap;
@@ -349,7 +346,6 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
     }
   }
   landRecord.setNormalMap(normalmap);
-  landRecord.convertHeightMapToDiff();
   // landRecord.printHeightMap(false);
 
   // Set the world map pixels... all to whatever 0 is for now.
@@ -374,6 +370,15 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
       }
     }
   }
+
+  // TODO: Add logic to lay down roads here
+  // 1.) Should put a divet in the heightmap like a well worn road in the game.
+  // 2.) Should put down appropriate texturing.
+
+  // Bake the final heightmap.
+  landRecord.setHeightMap(heightmap);
+
+  // Bake the land textures once the indices are all sorted out.
   landRecord.setVtexIndices(indices);
 
   landRecord.setRecordSize();

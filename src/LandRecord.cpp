@@ -7,6 +7,7 @@
 
 #include "LandRecord.h"
 
+#include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
 
@@ -101,6 +102,12 @@ int LandRecord::setHeightMap(std::int32_t heightmap[65][65])
   this->Unknown2 = 0x00;
   this->Unknown3 = 0x0000;
   memcpy(this->AbsHeightMap, heightmap, 65*65 * sizeof(std::int32_t));
+
+  // Now that the AbsHeightMap has been set, recalculate the differential height map
+  if (this->convertHeightMapToDiff() != 1)
+  {
+      throw std::runtime_error("convertHeightMapToDiff() failed");
+  }
   return 1;
 }
 
