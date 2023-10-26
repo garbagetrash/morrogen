@@ -190,6 +190,46 @@ int LandRecord::convertHeightMapToDiff()
   return 1;
 }
 
+int LandRecord::setNormalsFromHeightmap(int32_t heightmap[65][65])
+{
+  // Create and set the normal map from the height map data
+  LandRecord::normals normalmap;
+  typedef struct {
+    double X;
+    double Y;
+    double Z;
+  } vect3;
+
+  for (unsigned int i = 0; i < 65; i++)
+  {
+    for (unsigned int j = 0; j < 65; j++)
+    {
+      // t vect has x = 1, y = 0, always.
+      double tz = heightmap[i < 64 ? i+1 : i][j] - heightmap[i > 0 ? i-1 : i][j];
+      if (i == 0 || i == 64)
+      {
+        tz = tz * 2;
+      }
+
+      // beta vect has x = 0, y = 1, always.
+      double betaz = heightmap[i][j < 64 ? j+1 : j] - heightmap[i][j > 0 ? j-1 : j];
+      if (j == 0 || j == 64)
+      {
+        betaz = betaz * 2;
+      }
+
+      // Cross product of t and beta to get normal vector
+      double factor = sqrt(tz*tz + betaz*betaz + 1);
+      normalmap[i][j].X = round(127 * -tz / factor);
+      normalmap[i][j].Y = round(127 * betaz / factor);
+      normalmap[i][j].Z = round(127 * 1 / factor);
+    }
+  }
+  this->setNormalMap(normalmap);
+
+  return 1;
+}
+
 int LandRecord::setNormalMap(normals normalmap)
 {
   memcpy(this->NormalMap, normalmap, 65*65*3);
@@ -349,7 +389,7 @@ size_t LandRecord::exportToModFile(FILE *fid)
     totalSize += fwrite("VTEX", sizeof(char), 4, fid);
     size = 16 * 16 * sizeof(std::uint16_t);
     totalSize += fwrite(&size, sizeof(std::uint32_t), 1, fid);
-    totalSize += fwrite(this->Vtex, sizeof(std::uint16_t), 16 * 16, fid);
+    totalSize += fwrite(&(this->Vtex), sizeof(std::uint16_t), 16 * 16, fid);
   }
 
   printf("vtex\n");

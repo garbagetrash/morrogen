@@ -39,6 +39,9 @@ public:
   // Unsure, but I believe the 64x64 heightmap grid is turned into a 16x16 grid
   // for texturing, and these indexes pick which texture to apply to each
   // gridpoint given a list of textures to pick from.
+  //
+  // Figured out how these work. Each right indexed bit is a 4x4 block. Each
+  // left index indexes one of those 4x4 blocks in a Cell sized 4x4 grid pattern.
   void setVtexIndices(std::uint16_t indices[16][16]);
 
   // Set the Unknown to 0x09
@@ -53,6 +56,8 @@ public:
 
   // Set the normal map as specified
   int setNormalMap(normals normalmap);
+
+  int setNormalsFromHeightmap(int32_t heightmap[65][65]);
 
   // Set the world map pixel array
   int setWorldMapPixels(std::string pixelArray);

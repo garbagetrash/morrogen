@@ -24,11 +24,15 @@ enum class NoiseType {
   broad_low_hills,
 };
 
+typedef struct {
+    int32_t x;
+    int32_t y;
+}Point;
+
 class ModFile {
 public:
   ModFile();
   ModFile(const char *fileName);
-  virtual ~ModFile();
 
   // Populates the records given the raw data.
   int parseRawData();
@@ -40,6 +44,9 @@ public:
 
   // Populate the raw data buffer from a given file.
   int setRawDataFromFile(const char *fileName);
+
+  // Create a singular flat cell for testing things
+  void generateTestCell();
 
   // Makes a new land cell at the given x, y location provide.
   int generateNewLand(const char *filename, int cellXstart, int cellXstop,

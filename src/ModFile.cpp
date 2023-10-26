@@ -33,26 +33,12 @@ ModFile::ModFile(const char *fileName) {
   }
 }
 
-ModFile::~ModFile() {
-  int result = freeRawDataBuffer();
-  if (result < 0)
-  {
-    std::cout << "Failed to destroy file object!" << std::endl;
-  }
-  result = freeRecords();
-  if (result < 0)
-  {
-    std::cout << "Failed to destroy file object!" << std::endl;
-  }
-}
-
 int ModFile::parseRawData()
 {
   std::cout << "Beginning the parseRawData() call..." << std::endl;
 
-  char *ptr, *start;
-  ptr = this->rawData.data();
-  start = ptr;
+  char *ptr = this->rawData.data();
+  char *start = ptr;
   while (*ptr != '\0' && (ptr - start) < this->rawData.size())
   {
     // Let record point to our current record
@@ -293,6 +279,72 @@ std::vector<LandRecord> ModFile::generateLandRecords(int cellXstart,
   return landRecords;
 }
 
+void apply_heightmap_layer(int32_t layer[65][65], int32_t heightmap[65][65])
+{
+    for (size_t x = 0; x < 65; x++) {
+        for (size_t y = 0; y < 65; y++) {
+            heightmap[x][y] += layer[x][y];
+        }
+    }
+}
+
+std::vector<Point> get_neighbors(Point p)
+{
+    std::vector<Point> output;
+    if (p.x > 0) {
+        output.push_back({p.x-1, p.y});
+        if (p.y > 0) {
+            output.push_back({p.x-1, p.y-1});
+            output.push_back({p.x, p.y-1});
+        }
+        if (p.y < 64) {
+            output.push_back({p.x-1, p.y+1});
+            output.push_back({p.x, p.y+1});
+        }
+    }
+    if (p.x < 64) {
+        output.push_back({p.x+1, p.y});
+        if (p.y > 0) {
+            output.push_back({p.x+1, p.y-1});
+        }
+        if (p.y < 64) {
+            output.push_back({p.x+1, p.y+1});
+        }
+    }
+    return output;
+}
+
+void generate_road_from_cell_layout(std::vector<Point> layout,
+        int32_t heightmap[65][65],
+        uint16_t land_texture_map[16][16])
+{
+    // layout is a rasturized grid of _where_ to place road. `heightmap` and
+    // `land_texture_map` are what we modify to make the road.
+    
+    int32_t layer[65][65] = {0};
+    for (size_t i = 0; i < layout.size(); i++)
+    {
+        std::vector<Point> neighbors = get_neighbors(layout[i]);
+        for (auto &neighbor : neighbors) {
+            heightmap[neighbor.x][neighbor.y] -= 2;
+        }
+        size_t x = layout[i].x;
+        size_t y = layout[i].y;
+        heightmap[x][y] -= 2;
+
+        size_t xx = x / 4;
+        size_t yy = y / 4;
+        if (xx >= 16) {
+            xx = 15;
+        }
+        if (yy >= 16) {
+            yy = 15;
+        }
+        land_texture_map[yy][xx] = 2; // sand for now...
+    }
+}
+
+
 LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
 {
   LandRecord landRecord;
@@ -313,39 +365,7 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
   }
 
   // Create and set the normal map from the height map data
-  LandRecord::normals normalmap;
-  typedef struct {
-    double X;
-    double Y;
-    double Z;
-  } vect3;
-
-  for (unsigned int i = 0; i < 65; i++)
-  {
-    for (unsigned int j = 0; j < 65; j++)
-    {
-      // t vect has x = 1, y = 0, always.
-      double tz = heightmap[i < 64 ? i+1 : i][j] - heightmap[i > 0 ? i-1 : i][j];
-      if (i == 0 || i == 64)
-      {
-        tz = tz * 2;
-      }
-
-      // beta vect has x = 0, y = 1, always.
-      double betaz = heightmap[i][j < 64 ? j+1 : j] - heightmap[i][j > 0 ? j-1 : j];
-      if (j == 0 || j == 64)
-      {
-        betaz = betaz * 2;
-      }
-
-      // Cross product of t and beta to get normal vector
-      double factor = sqrt(tz*tz + betaz*betaz + 1);
-      normalmap[i][j].X = round(127 * -tz / factor);
-      normalmap[i][j].Y = round(127 * betaz / factor);
-      normalmap[i][j].Z = round(127 * 1 / factor);
-    }
-  }
-  landRecord.setNormalMap(normalmap);
+  landRecord.setNormalsFromHeightmap(heightmap);
   // landRecord.printHeightMap(false);
 
   // Set the world map pixels... all to whatever 0 is for now.
@@ -354,7 +374,7 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
   landRecord.setWorldMapPixels(pixelMap);
 
   // Set the texture indices
-  std::uint16_t indices[16][16];
+  std::uint16_t land_texture_map[16][16];
   for (int i = 0; i < 16; i++)
   {
     for (int j = 0; j < 16; j++)
@@ -363,10 +383,10 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
       if (height < 10)
       {
         // Sand
-        indices[i][j] = 2;
+        land_texture_map[i][j] = 2;
       } else {
         // Not sand
-        indices[i][j] = 1;
+        land_texture_map[i][j] = 1;
       }
     }
   }
@@ -374,12 +394,43 @@ LandRecord ModFile::generateLandRecord(int cellX, int cellY, NoiseType type)
   // TODO: Add logic to lay down roads here
   // 1.) Should put a divet in the heightmap like a well worn road in the game.
   // 2.) Should put down appropriate texturing.
+  //
+  // 1.) Generate a road network globally.
+  // 2.) Break down network into cells, and create cell road layout structs.
+  // 3.) Generate roads per cell using the corresponding cell road layout.
+  std::vector<Point> layout;
+  for (int32_t i = 0; i < 65; i++)
+  {
+      Point p = {i, i};
+      layout.push_back(p);
+
+      if (i < 64) {
+          Point p1 = {i+1, i};
+          layout.push_back(p1);
+      }
+
+      if (i < 63) {
+          Point p1a = {i + 2, i};
+          layout.push_back(p1a);
+      }
+
+      if (i > 0) {
+          Point p2 = {i-1, i};
+          layout.push_back(p2);
+      }
+
+      if (i > 1) {
+          Point p2a = {i-2, i};
+          layout.push_back(p2a);
+      }
+  }
+  generate_road_from_cell_layout(layout, heightmap, land_texture_map);
 
   // Bake the final heightmap.
   landRecord.setHeightMap(heightmap);
 
   // Bake the land textures once the indices are all sorted out.
-  landRecord.setVtexIndices(indices);
+  landRecord.setVtexIndices(land_texture_map);
 
   landRecord.setRecordSize();
 
@@ -410,6 +461,83 @@ LtexRecord ModFile::generateLtexRecord(const LtexPair &pair, std::uint32_t index
   ltexRecord.setRecordSize();
 
   return ltexRecord;
+}
+
+void ModFile::generateTestCell()
+{
+    // CELL record
+  CellRecord cellRecord;
+  cellRecord.setIdString("");
+  cellRecord.setGridAndFlags(-11, -11, 2);
+  cellRecord.setRegionName(std::string("Ascadian Isles Region"));
+  cellRecord.setRecordSize();
+  std::vector<CellRecord> cellRecords;
+  cellRecords.push_back(cellRecord);
+
+  // LAND record
+  LandRecord landRecord;
+  landRecord.setCell(-11, -11);
+  landRecord.setUnknown();
+  std::int32_t heightmap[65][65];
+  for (int i = 0; i < 65; i++)
+  {
+    for (int j = 0; j < 65; j++)
+    {
+        heightmap[i][j] = 1;
+    }
+  }
+  landRecord.setNormalsFromHeightmap(heightmap);
+  std::string pixelMap;
+  pixelMap.assign(81, 0);
+  landRecord.setWorldMapPixels(pixelMap);
+  // Set the texture indices
+  std::uint16_t land_texture_map[16][16];
+  for (int i = 0; i < 16; i++)
+  {
+    for (int j = 0; j < 16; j++)
+    {
+      land_texture_map[i][j] = 1;
+    }
+  }
+  for (int i = 0; i < 16; i++) {
+      land_texture_map[0][i] = 2;
+  }
+  land_texture_map[1][4] = 2;
+  land_texture_map[2][4] = 2;
+  land_texture_map[3][4] = 2;
+  land_texture_map[4][4] = 2;
+  land_texture_map[5][4] = 2;
+  landRecord.setHeightMap(heightmap);
+  landRecord.setVtexIndices(land_texture_map);
+  landRecord.setRecordSize();
+  std::vector<LandRecord> landRecords;
+  landRecords.push_back(landRecord);
+
+  // Now make the LTEX record(s)
+  std::vector<LtexRecord> ltexRecords = generateLtexRecords(TextureSets::AI);
+
+  // Create header last, once we knew the number of records
+  int nRecords = cellRecords.size() + landRecords.size() + ltexRecords.size();
+  FileHeaderRecord header = generateHeader("NewLandMod.esp", nRecords);
+
+  // Write to the file
+  FILE *fid = fopen("NewLandMod.esp", "wb");
+  size_t totalSize = header.exportToModFile(fid);
+
+  for (unsigned int i=0; i < cellRecords.size(); i++) {
+    totalSize += cellRecords[i].exportToModFile(fid);
+  }
+
+  for (unsigned int i=0; i < landRecords.size(); i++) {
+    totalSize += landRecords[i].exportToModFile(fid);
+  }
+
+  for (unsigned int i=0; i < ltexRecords.size(); i++) {
+    totalSize += ltexRecords[i].exportToModFile(fid);
+  }
+
+  fclose(fid);
+  std::cout << "Wrote " << totalSize << " bytes!" << std::endl;
 }
 
 int ModFile::generateNewLand(const char *filename, int cellXstart,
@@ -520,20 +648,6 @@ int ModFile::setRawDataFromFile(const char *fileName)
 
   // Tidy up
   fclose(fid);
-
-  return 1;
-}
-
-int ModFile::freeRawDataBuffer()
-{
-  this->rawData.clear();
-
-  return 1;
-}
-
-int ModFile::freeRecords()
-{
-  this->records.clear();
 
   return 1;
 }
