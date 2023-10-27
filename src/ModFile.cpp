@@ -247,6 +247,69 @@ CellRecord ModFile::generateCellRecord(const char *id, int cellX, int cellY,
   return cellRecord;
 }
 
+void create_mod_from_ir()
+{
+    // TODO: Create a whole mod file from a possibly large json file.
+    ModFile mf = ModFile();
+
+    // TODO: Load cell properties
+    char filename[] = "NewLandMod.esp";
+    int cell_x = -11;
+    int cell_y = -11;
+    std::vector<CellRecord> cells = mf.generateCellRecords(cell_x, cell_x, cell_y, cell_y, 2,
+            std::string("region_name"), NoiseType::shallow_large_islands, RegionType::ASCADIAN_ISLES);
+
+    // TODO: Load heightmap
+    int32_t heightmap[65][65] = {0};
+
+    // TODO: Load texture map
+    uint16_t texturemap[16][16] = {0};
+    std::vector<LtexRecord> ltexs = mf.generateLtexRecords(TextureSets::AI);
+
+    std::vector<LandRecord> lands;
+    lands.push_back(land_record_from_maps(cell_x, cell_y, heightmap, texturemap));
+
+    // Write out mod file
+    int nRecords = cells.size() + lands.size() + ltexs.size();
+    FileHeaderRecord header = mf.generateHeader(filename, nRecords);
+
+    // Write to the file
+    FILE *fid = fopen(filename, "wb");
+    size_t totalSize = header.exportToModFile(fid);
+
+    for (unsigned int i=0; i < cells.size(); i++) {
+        totalSize += cells[i].exportToModFile(fid);
+    }
+
+    for (unsigned int i=0; i < lands.size(); i++) {
+        totalSize += lands[i].exportToModFile(fid);
+    }
+
+    for (unsigned int i=0; i < ltexs.size(); i++) {
+        totalSize += ltexs[i].exportToModFile(fid);
+    }
+
+    fclose(fid);
+    std::cout << "Wrote " << totalSize << " bytes!" << std::endl;
+}
+
+void load_heightmap_ppm(const char *filename)
+{
+    // Load in .ppm file, which is dead simple RGB u8 data for the most part.
+    FILE *fid;
+    fid = fopen(filename, "rb");
+    int xdim, ydim;
+    fscanf(fid, "P6\n%d %d\n255\n", &xdim, &ydim);
+    printf("X: %d\nY: %d\n", xdim, ydim);
+    uint8_t *rgb = new uint8_t[3 * xdim * ydim];
+    fread(rgb, sizeof(uint8_t), 3 * xdim * ydim, fid);
+    fclose(fid);
+
+    // TODO: Divide into 65x65 Cells starting from ???
+
+    delete[] rgb;
+}
+
 std::vector<LandRecord> ModFile::generateLandRecords(int cellXstart,
                                                      int cellXstop,
                                                      int cellYstart,
@@ -342,6 +405,35 @@ void generate_road_from_cell_layout(std::vector<Point> layout,
         }
         land_texture_map[yy][xx] = 2; // sand for now...
     }
+}
+
+
+LandRecord land_record_from_maps(
+        int cellX, int cellY,
+        int32_t heightmap[65][65],
+        uint16_t texturemap[16][16])
+{
+  LandRecord landRecord;
+  landRecord.setCell(cellX, cellY);
+  landRecord.setUnknown();
+
+  // Create and set the normal map from the height map data
+  landRecord.setNormalsFromHeightmap(heightmap);
+
+  // Set the world map pixels... all to whatever 0 is for now.
+  std::string pixelMap;
+  pixelMap.assign(81, 0);
+  landRecord.setWorldMapPixels(pixelMap);
+
+  // Bake the final heightmap.
+  landRecord.setHeightMap(heightmap);
+
+  // Bake the land textures once the indices are all sorted out.
+  landRecord.setVtexIndices(texturemap);
+
+  landRecord.setRecordSize();
+
+  return landRecord;
 }
 
 

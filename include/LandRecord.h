@@ -36,13 +36,12 @@ public:
   int setCell(std::int32_t CellX, std::int32_t CellY);
 
   // Set the VTEX indices subrecord data
-  // Unsure, but I believe the 64x64 heightmap grid is turned into a 16x16 grid
-  // for texturing, and these indexes pick which texture to apply to each
-  // gridpoint given a list of textures to pick from.
+  // This now has logic so it works how you'd expect. Inner index is the x
+  // value of a cell 0-15, and outer index is the y value of a cell 0-15.
   //
-  // Figured out how these work. Each right indexed bit is a 4x4 block. Each
-  // left index indexes one of those 4x4 blocks in a Cell sized 4x4 grid pattern.
-  void setVtexIndices(std::uint16_t indices[16][16]);
+  // The left and top edges of a cell have a bit of bleed in of textures from
+  // the adjacent cells.
+  void setVtexIndices(uint16_t indices[16][16]);
 
   // Set the Unknown to 0x09
   int setUnknown();

@@ -55,9 +55,26 @@ int LandRecord::setCell(std::int32_t CellX, std::int32_t CellY)
   return 1;
 }
 
-void LandRecord::setVtexIndices(std::uint16_t indices[16][16])
+void LandRecord::setVtexIndices(uint16_t indices[16][16])
 {
-  memcpy(this->Vtex, indices, (16 * 16) * sizeof(std::uint16_t));
+  // First we convert from sanity to madness
+  uint16_t madness[16][16];
+  for (size_t x = 0; x < 16; x++) {
+    for (size_t y = 0; y < 16; y++) {
+      size_t macro_row = y / 4;
+      size_t macro_col = x / 4;
+      size_t inner = macro_col + 4 * macro_row;
+
+      size_t micro_row = y % 4;
+      size_t micro_col = x % 4;
+      size_t outer = micro_col + 4 * micro_row;
+
+      madness[inner][outer] = indices[x][y];
+    }
+  }
+
+  // Now we write out the madness
+  memcpy(this->Vtex, madness, (16 * 16) * sizeof(uint16_t));
   this->UsingVtex = true;
 }
 

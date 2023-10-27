@@ -29,6 +29,12 @@ typedef struct {
     int32_t y;
 }Point;
 
+LandRecord land_record_from_maps(
+    int cellX, int cellY,
+    int32_t heightmap[65][65],
+    uint16_t texturemap[16][16]);
+
+
 class ModFile {
 public:
   ModFile();
@@ -65,7 +71,6 @@ public:
   // File is composed entirely of records
   std::vector<ModRecord> records;
 
-private:
   int writeStringToFile(const char *fileName, std::string input);
 
   FileHeaderRecord generateHeader(const char *filename,
@@ -95,6 +100,7 @@ private:
                                               RegionType region_type);
 
   std::vector<LtexRecord> generateLtexRecords(const std::vector<LtexPair> textureSet);
+private:
 };
 
 #endif /* MODFILE_H_ */

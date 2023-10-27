@@ -40,8 +40,8 @@ int main(void) {
   std::cout << "Hello World!" << std::endl;
 
   // Create a new terrain mod
-  //create_new_terrain_mod();
-  create_test_mod();
+  create_new_terrain_mod();
+  //create_test_mod();
 
   std::cout << "Main() completed successfully!" << std::endl;
 
