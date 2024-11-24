@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import opensimplex as osx
 
+# Draw inspiration from: http://rlguy.com/map_generation/
+
 
 class Fbm:
     def __init__(self, base_size=2.0, noctaves=4, seed=1337):
