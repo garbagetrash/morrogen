@@ -8,13 +8,13 @@
 
 namespace Bsa {
 
-Bsa load_bsa_metadata(const std::string filename, bool verbose) {
+bsa_t load_bsa_metadata(const std::string filename, bool verbose) {
   std::fstream bsa_file;
   bsa_file.open(filename, std::ios::in);
   if (!bsa_file) {
     std::invalid_argument("File does not exist");
   }
-  Bsa output;
+  bsa_t output;
 
   // Read the header to get the number of files present
   bsa_file.read((char *)(&output.header), sizeof(BsaHeader));
@@ -72,7 +72,7 @@ Bsa load_bsa_metadata(const std::string filename, bool verbose) {
   return output;
 }
 
-void print_file_names(const Bsa &bsa_object) {
+void print_file_names(const bsa_t &bsa_object) {
   for (const BsaSubFile &subfile : bsa_object.subfiles) {
     std::cout << subfile.name << std::endl;
   }

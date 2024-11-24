@@ -24,10 +24,10 @@ public:
 typedef struct {
   BsaHeader header;
   std::vector<BsaSubFile> subfiles;
-} Bsa;
+} bsa_t;
 
 // Function prototypes
-Bsa load_bsa_metadata(const std::string filename, bool verbose);
-void print_file_names(const Bsa &bsa_object);
+bsa_t load_bsa_metadata(const std::string filename, bool verbose);
+void print_file_names(const bsa_t &bsa_object);
 
 } // namespace Bsa

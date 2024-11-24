@@ -34,7 +34,7 @@ int ModRecord::parseSubRecordsFromRawData() {
   {
     // Let record point to our current record
     ModSubRecord subRecord;
-    memset(&subRecord, 0, sizeof(ModSubRecord));
+    memset((void *)(&subRecord), 0, sizeof(ModSubRecord));
 
     // Grab the name first
     strncpy(subRecord.name, ptr, 4);

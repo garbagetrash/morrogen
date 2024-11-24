@@ -12,8 +12,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Load the specified BSA
-  Bsa::Bsa bsa = Bsa::load_bsa_metadata(std::string(argv[1]), true);
+  bsa_t bsa = Bsa::load_bsa_metadata(std::string(argv[1]), true);
 
   // Now print the files in the archive
-  Bsa::print_file_names(bsa);
+  print_file_names(bsa);
 }

@@ -43,7 +43,7 @@ int ModFile::parseRawData()
   {
     // Let record point to our current record
     ModRecord record;
-    memset(&record, 0, sizeof(ModRecord));
+    memset((void *)(&record), 0, sizeof(ModRecord));
 
     // Grab the name first
     strncpy(record.name, ptr, 4);
